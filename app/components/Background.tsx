@@ -19,6 +19,15 @@ const CAR_INITIAL_ROTATION: [number, number, number] = [0, -1.6, 0];
 
 const Background = ({ isVisible }: { isVisible: boolean }) => {
   const heroRef = useRef<HTMLDivElement | null>(null);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleResize = () => setIsMobileDevice(window.innerWidth < 768);
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -57,7 +66,10 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
       >
         <ambientLight intensity={1} />
         <PerspectiveCamera makeDefault position={[8, 0.5, 0]} fov={60} />
-        <directionalLight position={[0, 2, 2]} intensity={2.5} />
+        <directionalLight
+          position={[0, 2, 2]}
+          intensity={isMobileDevice ? 5.0 : 2.5}
+        />
 
         <ContenitorMasina isVisible={isVisible} />
       </Canvas>
