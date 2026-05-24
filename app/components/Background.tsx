@@ -37,7 +37,7 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
       ref={heroRef}
       className="absolute inset-0 w-full h-screen overflow-hidden"
     >
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] max-w-[450px] md:w-auto md:max-w-none select-none pointer-events-none -z-10 opacity-30">
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] max-w-[450px] md:w-auto md:max-w-none select-none pointer-events-none -z-10 opacity-60 md:opacity-30">
         <Image
           src={LogoEVOCHIP}
           alt="EVOCHIP Logo"
@@ -72,18 +72,13 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
   const grupMasinaRef = useRef<Group | null>(null);
   const [isCarAnimating, setIsCarAnimating] = useState(false);
 
-  // Detectăm dacă ecranul este de mobil
   const isMobile = viewport.width < 10;
 
-  // ========================================================
-  // COORDONATELE TALE FINALE ȘI STABILE PENTRU MOBIL
-  // ========================================================
   const MOBIL_SCALE = 1.1;
   const MOBIL_X = 10;
   const MOBIL_Y = 0;
   const MOBIL_Z = -10.5;
   const MOBIL_ROTATION = -0.7;
-  // ========================================================
 
   const currentScale = isMobile ? MOBIL_SCALE : CAR_SCALE;
   const currentVerticalOffset = isMobile ? MOBIL_Y : CAR_VERTICAL_OFFSET;
@@ -102,15 +97,13 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
       return;
     }
 
-    // SPAWN POINT (De unde pleacă mașina înainte de animație)
     if (isMobile) {
       gsap.set(grupMasinaRef.current.position, {
-        x: MOBIL_X + 6, // Pleacă puțin mai din spate pe axa X
-        y: MOBIL_Y - 2, // Aliniere pe Y (Three.js group compensation)
-        z: MOBIL_Z - 4, // Pleacă puțin mai din dreapta pe ecran
+        x: MOBIL_X + 6,
+        y: MOBIL_Y - 2,
+        z: MOBIL_Z - 4,
       });
     } else {
-      // Codul original de PC
       gsap.set(grupMasinaRef.current.position, {
         x: pozitieDreaptaViewport * 4,
         y: currentVerticalOffset - 2,
@@ -118,15 +111,14 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
       });
     }
 
-    // ANIMAȚIA GSAP (Unde ajunge mașina)
     const tween = gsap.to(grupMasinaRef.current.position, {
       x: isMobile ? MOBIL_X : pozitieDreaptaViewport + 4,
       y: isMobile ? MOBIL_Y - 2 : currentVerticalOffset - 2,
       z: isMobile ? MOBIL_Z : -pozitieDreaptaViewport,
-      duration: isMobile ? 2.2 : 2, // O animație fină de 2.2 secunde pe mobil
+      duration: isMobile ? 2.2 : 2,
       ease: isMobile ? "power3.out" : "power4.out",
-      delay: isMobile ? 0.5 : 1, // Începe după jumătate de secundă pe mobil
-      onStart: () => setIsCarAnimating(true), // Pornește rotația roților în timpul mișcării
+      delay: isMobile ? 0.5 : 1,
+      onStart: () => setIsCarAnimating(true),
       onComplete: () => setIsCarAnimating(false),
       onReverseComplete: () => setIsCarAnimating(false),
     });
@@ -148,7 +140,6 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
   return (
     <group
       ref={grupMasinaRef}
-      // Poziționare fallback în caz că GSAP nu s-a încărcat instant în prima milisecundă
       position={[
         isMobile ? MOBIL_X : 16,
         currentVerticalOffset - 2,
@@ -159,12 +150,11 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
         <CarModel
           scale={currentScale}
           grupParinteRef={grupMasinaRef}
-          isSpinning={isCarAnimating}
+          isSpinning={isMobile ? false : isCarAnimating}
           rotationY={isMobile ? MOBIL_ROTATION : CAR_INITIAL_ROTATION[1]}
         />
       </group>
 
-      {/* Fără reflexie pe mobil pentru performanță brută */}
       {!isMobile && (
         <group position={[0, CAR_REFLECTION_OFFSET + 2, 0]}>
           <CarModel
