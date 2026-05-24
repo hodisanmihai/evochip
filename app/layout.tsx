@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import Background from "./components/Background";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -20,7 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased select-none">
       <body className={`${montserrat.className} min-h-full flex flex-col`}>
-        {children}
+        <div className="relative z-10 min-h-full flex-1">
+          <Background isVisible={true} />
+          {children}
+        </div>
       </body>
     </html>
   );

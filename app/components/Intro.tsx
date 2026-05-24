@@ -85,7 +85,7 @@ const Intro = ({
   return (
     <div
       ref={introRef}
-      className="intro-wrapper absolute z-10 flex h-screen w-screen items-center justify-center overflow-hidden bg-black"
+      className="intro-wrapper fixed inset-0 z-50 flex h-screen w-screen items-center justify-center overflow-hidden bg-black"
     >
       <div className="flex w-full max-w-[800px] items-center justify-center ">
         <svg

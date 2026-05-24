@@ -44,7 +44,7 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
   return (
     <div
       ref={heroRef}
-      className="absolute inset-0 w-full h-screen overflow-hidden"
+      className="fixed inset-0 z-0 h-full w-full overflow-hidden pointer-events-none"
     >
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] max-w-[450px] md:w-auto md:max-w-none select-none pointer-events-none -z-10 opacity-60 md:opacity-30">
         <Image
@@ -129,7 +129,7 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
       z: isMobile ? MOBIL_Z : -pozitieDreaptaViewport,
       duration: isMobile ? 2.2 : 2,
       ease: isMobile ? "power3.out" : "power4.out",
-      delay: isMobile ? 0.5 : 1,
+      delay: isMobile ? 0.5 : 0.5,
       onStart: () => setIsCarAnimating(true),
       onComplete: () => setIsCarAnimating(false),
       onReverseComplete: () => setIsCarAnimating(false),

@@ -2,6 +2,7 @@
 
 import Intro from "./components/Intro";
 import HeroPage from "./components/HeroPage";
+import ShowCase from "./components/ShowCase";
 import { useCallback, useState } from "react";
 
 export default function Home() {
@@ -17,11 +18,13 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative flex w-screen min-h-screen flex-1 flex-col items-center justify-center overflow-hidden">
+    <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center overflow-hidden">
       {showIntro && (
         <Intro onRevealHero={revealHero} onComplete={finishIntro} />
       )}
-      <HeroPage isVisible={showHero} />
+      {showHero && <HeroPage />}
+      {showHero && <ShowCase />}
     </main>
   );
 }
+1;

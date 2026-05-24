@@ -2,6 +2,22 @@
   "hero": {
     "titluNormal": "Fabricat de ei, ",
     "titluColorat": "Optimizat de noi.",
-    "subtitlu": "Optimizări software de înaltă precizie . Performanță de top fără compromisuri la capitolul fiabilitate."
+    "subtitlu": "Optimizări software de înaltă precizie. Performanță de top fără compromisuri la capitolul fiabilitate."
+  },
+
+  "showcase1": {
+    "titluNormal": "Despre ",
+    "titluColorat": "Evochip",
+    "subtitlu": "EvoChip reprezintă punctul de întâlnire între performanță, fiabilitate și profesionalism în domeniul optimizărilor software auto. Activitatea se concentrează pe dezvoltarea de soluții avansate pentru o gamă largă de vehicule, abordând fiecare proiect cu atenție maximă la detalii pentru a asigura rezultate sigure și eficiente."
+  },
+  "showcase2": {
+    "titluNormal": "Cum ",
+    "titluColorat": "lucrăm",
+    "subtitlu": "Calibrarea se realizează individual pe baza analizelor tehnice reale. Se utilizează exclusiv soluții dezvoltate la standarde OEM, garantând un echilibru optim între creșterea puterii, răspunsul motorului și funcționarea corectă a componentelor."
+  },
+  "showcase3": {
+    "titluNormal": "Promisiunea ",
+    "titluColorat": "Evochip",
+    "subtitlu": "Obiectivul principal rămâne atingerea performanței maxime fără compromisuri în privința fiabilității. Fiecare intervenție software este concepută să respecte toleranțele mecanice, oferind siguranță totală pe termen lung."
   }
 }
