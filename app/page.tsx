@@ -4,6 +4,8 @@ import Intro from "./components/Intro";
 import HeroPage from "./components/HeroPage";
 import ShowCase from "./components/ShowCase";
 import { useCallback, useState } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true);
@@ -11,8 +13,8 @@ export default function Home() {
 
   const revealHero = useCallback(() => {
     setShowHero(true);
+    setTimeout(() => ScrollTrigger.refresh(), 300);
   }, []);
-
   const finishIntro = useCallback(() => {
     setShowIntro(false);
   }, []);

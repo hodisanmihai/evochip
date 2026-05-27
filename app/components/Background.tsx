@@ -2,16 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LogoEVOCHIP from "../../public/resources/LOGO-EVOCHIP.png";
 import Image from "next/image";
-import { Canvas, useThree, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera, useGLTF } from "@react-three/drei";
 import { Mesh, Group, Object3D } from "three";
 
-// Setări originale PC
+gsap.registerPlugin(ScrollTrigger);
+
 const CAR_SCALE = 1.9;
 const VISIBLE_CAR_RATIO = 0.5;
-const CAR_VERTICAL_OFFSET = 0.85;
+const CAR_VERTICAL_OFFSET = -4;
 const CAR_REFLECTION_OFFSET = -2;
 const CAR_REFLECTION_OPACITY = 0.1;
 const CAR_REFLECTION_VERTICAL_SCALE = 1;
@@ -20,13 +22,15 @@ const CAR_INITIAL_ROTATION: [number, number, number] = [0, -1.6, 0];
 const Background = ({ isVisible }: { isVisible: boolean }) => {
   const heroRef = useRef<HTMLDivElement | null>(null);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handleResize = () => setIsMobileDevice(window.innerWidth < 768);
-      handleResize();
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }
+    if (typeof window === "undefined") return;
+
+    const handleResize = () => setIsMobileDevice(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {
@@ -40,6 +44,9 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
       ease: "power3.out",
     });
   }, [isVisible]);
+  useEffect(() => {
+    ScrollTrigger.refresh();
+  }, []);
 
   return (
     <div
@@ -65,11 +72,14 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
         gl={{ powerPreference: "high-performance" }}
       >
         <ambientLight intensity={1} />
-        <PerspectiveCamera makeDefault position={[8, 0.5, 0]} fov={60} />
         <directionalLight
           position={[0, 2, 2]}
           intensity={isMobileDevice ? 5.0 : 2.5}
         />
+
+        <PerspectiveCamera makeDefault fov={45} />
+
+        <CameraScrollController isMobile={isMobileDevice} />
 
         <ContenitorMasina isVisible={isVisible} />
       </Canvas>
@@ -79,8 +89,70 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
 
 export default Background;
 
+function CameraScrollController({ isMobile }: { isMobile: boolean }) {
+  const { camera } = useThree();
+  const lookAt = useRef({ x: 0, y: 0.2, z: 0 });
+
+  useEffect(() => {
+    if (isMobile) {
+      gsap.set(camera.position, {
+        x: 1,
+        y: 1.2,
+        z: 8,
+      });
+
+      gsap.set(lookAt.current, {
+        x: 8,
+        y: 2,
+        z: -12.5,
+      });
+      return;
+    }
+
+    gsap.set(camera.position, { x: 0, y: 1.5, z: 8 });
+    gsap.set(lookAt.current, { x: 0, y: 0.2, z: 0 });
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: "#showcase-wrapper",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1.5,
+      },
+    });
+
+    tl.to(camera.position, { x: -5.5, y: -1.55, z: 5, duration: 1 }, 0).to(
+      lookAt.current,
+      { x: -1, y: -1.5, z: -4, duration: 0.5 },
+      0,
+    );
+
+    tl.to(camera.position, { x: -11, y: -1.55, z: -4, duration: 1 }, 1).to(
+      lookAt.current,
+      { x: 22.5, y: -1.5, z: 4, duration: 0.5 },
+      1,
+    );
+
+    tl.to(camera.position, { x: -5.5, y: -1.55, z: 5, duration: 1 }, 2).to(
+      lookAt.current,
+      { x: -1, y: -1.5, z: -4, duration: 0.5 },
+      2,
+    );
+    return () => {
+      tl.kill();
+    };
+  }, [camera]);
+
+  useFrame(() => {
+    camera.lookAt(lookAt.current.x, lookAt.current.y, lookAt.current.z);
+    camera.updateProjectionMatrix();
+  });
+
+  return null;
+}
+
 function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
-  const { camera, viewport } = useThree();
+  const { viewport } = useThree();
   const grupMasinaRef = useRef<Group | null>(null);
   const [isCarAnimating, setIsCarAnimating] = useState(false);
 
@@ -95,7 +167,7 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
   const currentScale = isMobile ? MOBIL_SCALE : CAR_SCALE;
   const currentVerticalOffset = isMobile ? MOBIL_Y : CAR_VERTICAL_OFFSET;
 
-  const currentViewport = viewport.getCurrentViewport(camera, [0, 0, 0]);
+  const currentViewport = viewport;
   const pozitieDreaptaViewport =
     currentViewport.width * (1.1 - VISIBLE_CAR_RATIO);
 
@@ -118,14 +190,14 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
     } else {
       gsap.set(grupMasinaRef.current.position, {
         x: pozitieDreaptaViewport * 4,
-        y: currentVerticalOffset - 2,
+        y: currentVerticalOffset,
         z: -pozitieDreaptaViewport,
       });
     }
 
     const tween = gsap.to(grupMasinaRef.current.position, {
-      x: isMobile ? MOBIL_X : pozitieDreaptaViewport + 4,
-      y: isMobile ? MOBIL_Y - 2 : currentVerticalOffset - 2,
+      x: isMobile ? MOBIL_X : pozitieDreaptaViewport + 2,
+      y: isMobile ? MOBIL_Y - 2 : currentVerticalOffset,
       z: isMobile ? MOBIL_Z : -pozitieDreaptaViewport,
       duration: isMobile ? 2.2 : 2,
       ease: isMobile ? "power3.out" : "power4.out",
@@ -272,7 +344,6 @@ function CarModel({
     const elapsed = t - timpStartAnimatie.current;
     const progress = Math.min(1, elapsed / 2);
     const speed = Math.pow(1 - progress, 4);
-
     const rotStep = speed * 0.2 * (reflected ? -verticalScale : 1);
 
     if (progress < 1) {
