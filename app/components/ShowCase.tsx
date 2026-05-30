@@ -96,7 +96,7 @@ const ShowCase = () => {
 const FirstShowCase = () => {
   return (
     <div
-      className="w-full h-auto md:h-screen py-12 flex items-center justify-start p-8 md:p-20"
+      className="w-full h-auto md:h-screen py-12 flex items-center justify-start p-8 md:p-20 "
       id="showcase1"
     >
       <div className="h-full w-full md:w-1/2 flex flex-col md:items-center justify-center gap-10 md:px-10 text-left text-shadow-2xl sm:gap-6 md:items-start md:text-left">
