@@ -68,7 +68,7 @@ const ServicesShowCase = () => {
     <div
       id="showcase4"
       ref={sectionRef}
-      className="w-full h-screen flex flex-col items-start justify-start py-20 p-4 md:p-8 md:px-0 gap-8 overflow-hidden bg-black/50 md:bg-black/0"
+      className="w-full h-screen flex flex-col items-start justify-start py-20 p-4 md:p-8 md:px-0 gap-8 overflow-hidden bg-black/50 md:bg-black/0  z-[2]"
     >
       <h1 className="animate-title text-[1.2rem] leading-tight px-6 md:mx-35 text-white whitespace-nowrap">
         {showcase.titluNormal}

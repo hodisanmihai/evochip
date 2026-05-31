@@ -32,16 +32,18 @@ export default function Home() {
       {showHero && <HeroPage />}
       {showHero && <ShowCase />}
       {showHero && <ServicesShowCase />}
-      {showHero && (
+      {/* {showHero && (
         <div className="relative w-full">
-          <div className="sticky top-0 h-screen z-0">
+          <div className="sticky top-0 h-screen z-2">
             <LatestProjects />
           </div>
           <div className="relative z-10 -mt-screen">
             <Prices />
           </div>
         </div>
-      )}
+      )} */}
+      {showHero && <LatestProjects />}
+      {showHero && <Prices />}
       <Background isVisible={showHero} />
     </main>
   );

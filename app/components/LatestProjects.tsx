@@ -76,7 +76,7 @@ const LatestProjects = () => {
 
   return (
     <div
-      className="w-full md:min-h-auto min-h-screen flex flex-col items-center justify-start  md:py-20 px-4 md:px-8 bg-black/50 md:bg-black/0 overflow-hidden"
+      className="w-full md:min-h-auto min-h-screen flex flex-col items-center justify-start md:py-20 px-4 md:px-8 bg-black/50 md:bg-black/0 overflow-hidden z-2 "
       id="latest-projects"
     >
       <div className=" w-full h-full flex flex-col items-center justify-start gap-8 md:gap-12">

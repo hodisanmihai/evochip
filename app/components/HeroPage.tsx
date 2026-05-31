@@ -38,9 +38,9 @@ const HeroPage = () => {
   return (
     <section
       ref={containerRef}
-      className="relative isolate flex min-h-screen w-full items-center justify-center overflow-hidden md:justify-start"
+      className="relative isolate flex min-h-screen w-full items-center justify-center overflow-hidden md:justify-start z-2"
     >
-      <div className="relative z-10 flex w-full min-h-screen flex-col items-start justify-evenly gap-6 bg-black/50 px-5 pb-16 sm:px-8 md:min-h-auto md:items-start md:justify-center md:bg-black/0 md:px-10 md:pt-20 lg:w-1/2 lg:pl-20 lg:pr-10">
+      <div className="relative  flex w-full min-h-screen flex-col items-start justify-evenly gap-6 bg-black/50 px-5 pb-16 sm:px-8 md:min-h-auto md:items-start md:justify-center md:bg-black/0 md:px-10 md:pt-20 lg:w-1/2 lg:pl-20 lg:pr-10">
         <div className="flex max-w-xl flex-col items-start justify-center gap-4 px-10 text-left text-shadow-2xl sm:gap-6 md:items-center md:text-center">
           <h1 className="animate-title opacity-0 text-[1.2rem] leading-tight text-white">
             {continut.hero.titluNormal}{" "}

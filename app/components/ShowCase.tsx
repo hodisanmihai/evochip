@@ -84,7 +84,7 @@ const ShowCase = () => {
     <div
       id="showcase-wrapper"
       ref={containerRef}
-      className="bg-black/50 md:bg-black/0"
+      className="bg-black/50 md:bg-black/0  z-[2] "
     >
       <FirstShowCase />
       <SecondShowCase />

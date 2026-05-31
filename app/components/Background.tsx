@@ -54,7 +54,7 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
   return (
     <div
       ref={heroRef}
-      className="fixed inset-0 z-[-1] h-full w-full overflow-hidden pointer-events-none"
+      className="fixed inset-0 z-[1] h-full w-full overflow-hidden pointer-events-none"
     >
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] max-w-[450px] opacity-60 md:opacity-30 select-none">
         <Image src={LogoEVOCHIP} alt="EVOCHIP Logo" priority />
