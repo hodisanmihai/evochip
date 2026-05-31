@@ -7,7 +7,7 @@ import { useCallback, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ServicesShowCase from "./components/ServicesShowCase";
-import Portfolio from "./components/Portfolio";
+import LatestProjects from "./components/LatestProjects";
 import Background from "./components/Background";
 
 export default function Home() {
@@ -31,7 +31,7 @@ export default function Home() {
       {showHero && <HeroPage />}
       {showHero && <ShowCase />}
       {showHero && <ServicesShowCase />}
-      {showHero && <Portfolio />}
+      {showHero && <LatestProjects />}
 
       <Background isVisible={showHero} />
     </main>
