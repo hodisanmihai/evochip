@@ -8,13 +8,67 @@ const montserrat = Montserrat({
   weight: ["400", "500", "600", "700"],
   variable: "--font-montserrat",
 });
+
+// Optimizare SEO avansată pentru EVOCHIP Oradea
 export const metadata: Metadata = {
-  title: "EVOCHIP",
+  title: {
+    default: "EvoChip | Resoftări Auto Profesionale & Chiptuning Oradea",
+    template: "%s | EvoChip Oradea",
+  },
   description:
-    "EVOCHIP - SERVICII PROFESIONALE DE CHIPTUNING ȘI OPTIMIZARE AUTO - DPF EGR ADBLUE - ORADEA",
+    "Servicii profesionale de chiptuning și resoftări Stage 1, 2, 3 în Oradea. Soluții software OEM pentru performanță auto, optimizare DPF, EGR, AdBlue și diagnoză.",
+  keywords: [
+    "chiptuning Oradea",
+    "resoftare auto Oradea",
+    "Stage 1",
+    "Stage 2",
+    "anulare DPF",
+    "solutii EGR",
+    "AdBlue Oradea",
+    "file service",
+    "diagnoza auto",
+    "tuning auto Bihor",
+    "EvoChip",
+  ],
+  authors: [{ name: "EvoChip" }],
+  metadataBase: new URL("https://evochip.ro"), // Înlocuiește cu domeniul tău real când îl cumperi
+  alternates: {
+    canonical: "/",
+  },
+  // Afișare profi când distribui link-ul pe WhatsApp, Facebook sau Instagram
+  openGraph: {
+    title: "EvoChip | Resoftări Auto Profesionale & Chiptuning Oradea",
+    description:
+      "Performanță și fiabilitate fără compromisuri. Stage 1/2/3, diagnoză și soluții DPF/EGR/AdBlue la standarde OEM în Oradea.",
+    url: "https://evochip.ro",
+    siteName: "EvoChip",
+    locale: "ro_RO",
+    type: "website",
+    images: [
+      {
+        url: evoChipLogo.src,
+        width: 1200,
+        height: 630,
+        alt: "EvoChip Oradea - Chiptuning și Resoftări Auto",
+      },
+    ],
+  },
+  // Configurare iconițe (Tab Browser)
   icons: {
     icon: evoChipLogo.src,
     apple: evoChipLogo.src,
+  },
+  // Instrucțiuni pentru roboții de căutare Google
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
