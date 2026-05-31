@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import Link from "next/link";
 import continut from "../data/continut.json";
 import gsap from "gsap";
 
@@ -63,12 +62,12 @@ const HeroPage = () => {
             Suna pentru o programare
           </a>
 
-          <Link
-            href="#"
-            className="animate-btn opacity-0 inline-flex items-center justify-center rounded-full border border-primary bg-secondary py-4 text-center font-semibold text-primary shadow-lg shadow-black/50 transition duration-300 hover:scale-[1.01] md:px-6 md:py-4"
+          <a
+            href="#showcase1"
+            className="animate-btn opacity-0 inline-flex items-center justify-center rounded-full border border-primary bg-secondary py-4  text-center font-semibold text-primary shadow-lg shadow-black/50 transition duration-300 hover:scale-[1.01] md:px-16 md:py-4"
           >
-            Exploreaza serviciile noastre
-          </Link>
+            Află mai multe
+          </a>
         </div>
       </div>
     </section>
