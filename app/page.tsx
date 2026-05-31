@@ -9,6 +9,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ServicesShowCase from "./components/ServicesShowCase";
 import LatestProjects from "./components/LatestProjects";
 import Background from "./components/Background";
+import Prices from "./components/Prices";
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true);
@@ -31,8 +32,16 @@ export default function Home() {
       {showHero && <HeroPage />}
       {showHero && <ShowCase />}
       {showHero && <ServicesShowCase />}
-      {showHero && <LatestProjects />}
-
+      {showHero && (
+        <div className="relative w-full">
+          <div className="sticky top-0 h-screen z-0">
+            <LatestProjects />
+          </div>
+          <div className="relative z-10 -mt-screen">
+            <Prices />
+          </div>
+        </div>
+      )}
       <Background isVisible={showHero} />
     </main>
   );

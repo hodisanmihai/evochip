@@ -12,7 +12,7 @@ const CONTAINER_PADDING_DESKTOP = 64;
 const CONTAINER_PADDING_MOBILE = 32;
 const AUTOPLAY_DELAY = 10000;
 
-const projects = Array(10).fill(null);
+const projects = Array(13).fill(null);
 
 const LatestProjects = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -98,7 +98,7 @@ const LatestProjects = () => {
           <div className="p-4 md:p-8 flex  flex-col h-full  md:flex-col items-center gap-4 md:gap-6 text-white">
             {/* Grid carduri — 2 coloane pe mobil, flex pe desktop */}
             <div className="w-full overflow-visible h-full">
-              <div className="grid md:grid-cols-2  gap-4 md:flex md:flex-wrap md:gap-6 md:justify-start">
+              <div className="grid md:grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-6 md:justify-center">
                 {visibleProjects.map((_, i) => (
                   <LatestCard key={start + i} />
                 ))}
