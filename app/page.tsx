@@ -10,6 +10,8 @@ import ServicesShowCase from "./components/ServicesShowCase";
 import LatestProjects from "./components/LatestProjects";
 import Background from "./components/Background";
 import Prices from "./components/Prices";
+import Contact from "./components/Contact";
+import Footer from "./components/Footer";
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true);
@@ -32,18 +34,12 @@ export default function Home() {
       {showHero && <HeroPage />}
       {showHero && <ShowCase />}
       {showHero && <ServicesShowCase />}
-      {/* {showHero && (
-        <div className="relative w-full">
-          <div className="sticky top-0 h-screen z-2">
-            <LatestProjects />
-          </div>
-          <div className="relative z-10 -mt-screen">
-            <Prices />
-          </div>
-        </div>
-      )} */}
+
       {showHero && <LatestProjects />}
       {showHero && <Prices />}
+      {showHero && <Contact />}
+      {showHero && <Footer />}
+
       <Background isVisible={showHero} />
     </main>
   );
