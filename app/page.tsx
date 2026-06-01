@@ -12,6 +12,7 @@ import Background from "./components/Background";
 import Prices from "./components/Prices";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
+import NavBar from "./components/NavBar";
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true);
@@ -36,6 +37,7 @@ export default function Home() {
       {showHero && <ServicesShowCase />}
 
       {showHero && <LatestProjects />}
+      {showHero && <NavBar />}
       {showHero && <Prices />}
       {showHero && <Contact />}
       {showHero && <Footer />}
