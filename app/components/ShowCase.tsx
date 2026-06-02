@@ -9,7 +9,7 @@ const ShowCase = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       gsap.registerPlugin(ScrollTrigger);
       const tl1 = gsap.timeline({
         scrollTrigger: {
@@ -84,7 +84,7 @@ const ShowCase = () => {
     <div
       id="showcase-wrapper"
       ref={containerRef}
-      className="bg-black/50 md:bg-black/0  z-[2] "
+      className="bg-black/50 md:bg-black/0  z-2 "
     >
       <FirstShowCase />
       <SecondShowCase />
@@ -99,7 +99,7 @@ const FirstShowCase = () => {
       className="w-full h-auto md:h-screen py-12 flex items-center justify-start p-8 md:p-20 "
       id="showcase1"
     >
-      <div className="h-full w-full md:w-1/2 flex flex-col md:items-center justify-center gap-10 md:px-10 text-left text-shadow-2xl sm:gap-6 md:items-start md:text-left">
+      <div className="h-full w-full md:w-1/2 flex flex-col items-center justify-center gap-10 md:px-10 text-left text-shadow-2xl sm:gap-6 md:items-start md:text-left">
         <h1 className=" animate-title text-[1.2rem] leading-tight text-white">
           {continut.showcase1.titluNormal}
           <span className="text-primary text-shadow-2xl">
@@ -120,7 +120,7 @@ const SecondShowCase = () => {
       className="w-full h-auto md:h-screen py-12 flex items-center justify-end p-8 md:p-20"
       id="showcase2"
     >
-      <div className="h-full w-full md:w-1/2 flex flex-col md:items-center  justify-center gap-4 md:px-10 text-left text-shadow-2xl sm:gap-6 md:items-start md:text-left">
+      <div className="h-full w-full md:w-1/2 flex flex-col items-center  justify-center gap-4 md:px-10 text-left text-shadow-2xl sm:gap-6 md:items-start md:text-left">
         <h1 className="animate-title text-[1.2rem] leading-tight text-white">
           {continut.showcase2.titluNormal}
           <span className="text-primary text-shadow-2xl">
@@ -140,7 +140,7 @@ const ThirdShowCase = () => {
       className="w-full h-auto md:h-screen py-12 flex md:items-center  justify-start p-8 md:p-20"
       id="showcase3"
     >
-      <div className="h-full w-full md:w-1/2 flex flex-col md:items-center justify-center gap-4 md:px-10 text-left text-shadow-2xl sm:gap-6 md:items-start md:text-left">
+      <div className="h-full w-full md:w-1/2 flex flex-col items-center justify-center gap-4 md:px-10 text-left text-shadow-2xl sm:gap-6 md:items-start md:text-left">
         <h1 className="animate-title text-[1.2rem] leading-tight text-white">
           {continut.showcase3.titluNormal}
           <span className="text-primary text-shadow-2xl">
