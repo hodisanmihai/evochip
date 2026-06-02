@@ -54,9 +54,9 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
   return (
     <div
       ref={heroRef}
-      className="fixed inset-0 z-[1] h-full w-full overflow-hidden pointer-events-none"
+      className="fixed inset-0 z-1 h-full w-full overflow-hidden pointer-events-none"
     >
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] max-w-[450px] opacity-60 md:opacity-30 select-none">
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] max-w-125opacity-60 md:opacity-30 select-none">
         <Image src={LogoEVOCHIP} alt="EVOCHIP Logo" priority />
       </div>
 
@@ -165,8 +165,9 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
   const { viewport } = useThree();
   const grupMasinaRef = useRef<Group | null>(null);
 
-  // IMPORTANT FIX: ref instead of state (fixes wheels bug)
+  // Keep render state in sync with animation progress without reading ref during render.
   const isCarAnimating = useRef(false);
+  const [isCarAnimatingState, setIsCarAnimatingState] = useState(false);
 
   const isMobile = viewport.width < 10;
 
@@ -184,11 +185,21 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
   useEffect(() => {
     if (!grupMasinaRef.current) return;
 
+    let mounted = true;
+    const setAnimating = (value: boolean) => {
+      isCarAnimating.current = value;
+      if (mounted) {
+        setIsCarAnimatingState(value);
+      }
+    };
+
     gsap.killTweensOf(grupMasinaRef.current.position);
 
     if (!isVisible) {
-      isCarAnimating.current = false;
-      return;
+      setAnimating(false);
+      return () => {
+        mounted = false;
+      };
     }
 
     if (isMobile) {
@@ -212,21 +223,22 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
       duration: isMobile ? 2.2 : 2,
       ease: isMobile ? "power3.out" : "power4.out",
 
-      onStart: () => {
-        isCarAnimating.current = true;
-      },
-      onComplete: () => {
-        isCarAnimating.current = false;
-      },
-      onReverseComplete: () => {
-        isCarAnimating.current = false;
-      },
+      onStart: () => setAnimating(true),
+      onComplete: () => setAnimating(false),
+      onReverseComplete: () => setAnimating(false),
     });
 
     return () => {
+      mounted = false;
       tween.kill();
     };
-  }, [isVisible, isMobile, currentVerticalOffset, viewport.width]);
+  }, [
+    isVisible,
+    isMobile,
+    currentVerticalOffset,
+    pozitieDreaptaViewport,
+    MOBIL_Z,
+  ]);
 
   return (
     <group
@@ -240,7 +252,7 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
       <group>
         <CarModel
           scale={currentScale}
-          isSpinning={isMobile ? false : isCarAnimating.current}
+          isSpinning={isMobile ? false : isCarAnimatingState}
           rotationY={isMobile ? MOBIL_ROTATION : CAR_INITIAL_ROTATION[1]}
         />
       </group>
@@ -251,7 +263,7 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
             scale={CAR_SCALE}
             reflected
             verticalScale={CAR_REFLECTION_VERTICAL_SCALE}
-            isSpinning={isCarAnimating.current}
+            isSpinning={isCarAnimatingState}
             rotationY={CAR_INITIAL_ROTATION[1]}
           />
         </group>
@@ -377,7 +389,7 @@ function CarModel({
 
   useEffect(() => {
     return () => {
-      model.traverse((object: any) => {
+      model.traverse((object: Object3D) => {
         if (object instanceof Mesh) {
           object.geometry.dispose();
 

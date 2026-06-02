@@ -8,7 +8,7 @@ const HeroPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         defaults: { ease: "power2.out", duration: 1.5 },
       });

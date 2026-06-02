@@ -4,7 +4,6 @@ import Intro from "./components/Intro";
 import HeroPage from "./components/HeroPage";
 import ShowCase from "./components/ShowCase";
 import { useCallback, useState } from "react";
-import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ServicesShowCase from "./components/ServicesShowCase";
 import LatestProjects from "./components/LatestProjects";

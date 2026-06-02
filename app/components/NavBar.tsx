@@ -94,7 +94,7 @@ const NavBar: React.FC = () => {
   }, [menuOpen]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-[50] overscroll-none">
+    <header className="fixed inset-x-0 top-0 z-50 overscroll-none">
       <div className="mx-auto flex items-center justify-between w-full px-4 py-4 md:px-8 bg-black/80 backdrop-blur-xl border-b border-red-500/10">
         <a href="#" className="flex items-center gap-3">
           <div className="relative w-10 h-10 md:w-16 md:h-16">

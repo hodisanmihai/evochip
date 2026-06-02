@@ -29,13 +29,13 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="w-full bg-gradient-to-t from-black via-zinc-950 to-black border-t border-red-500/20 backdrop-blur-xl z-[2]">
+    <footer className="w-full bg-linear-to-t from-black via-zinc-950 to-black border-t border-red-500/20 backdrop-blur-xl z-2">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-16">
         {/* Main Footer Content */}
         <div className="grid  grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {/* About Section */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-xl font-bold bg-gradient-to-r from-red-200 via-white to-red-200 bg-clip-text text-transparent">
+            <h3 className="text-xl font-bold bg-linear-to-r from-red-200 via-white to-red-200 bg-clip-text text-transparent">
               EvoChip
             </h3>
             <p className="text-sm text-zinc-400 leading-relaxed">
@@ -43,7 +43,7 @@ const Footer: React.FC = () => {
               afacerii tale.
             </p>
             <div className="flex items-center gap-3 mt-2">
-              <div className="h-[2px] w-8 bg-gradient-to-r from-red-500 to-transparent" />
+              <div className="h-0.5 w-8 bg-linear-to-r from-red-500 to-transparent" />
               <span className="text-xs text-red-500/80 font-semibold">
                 QUALITY SOLUTIONS
               </span>
@@ -93,7 +93,7 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Divider */}
-        <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-red-500/20 to-transparent mb-8" />
+        <div className="h-px w-full bg-linear-to-r from-transparent via-red-500/20 to-transparent mb-8" />
 
         {/* Social Links & Copyright */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">

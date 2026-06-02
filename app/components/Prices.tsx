@@ -177,7 +177,7 @@ const Prices = () => {
           {pricingData.map((stage) => (
             <div
               key={stage.id}
-              className="shrink-0 w-[290px] xs:w-[350px] sm:w-[400px] md:p-4"
+              className="shrink-0 72.5 xs:w-[350px] sm:w-100 md:p-4 mx-4 md:mx-0"
             >
               <CardPrices
                 title={stage.title}
@@ -206,7 +206,7 @@ const CardPrices = ({
   const rows = Array.from({ length: 38 });
 
   return (
-    <div className="bg-thirdcolor border border-zinc-800 w-full xs:aspect-[10/16] rounded-tl-3xl relative overflow-hidden shadow-2xl backdrop-blur-xl flex flex-col justify-between min-h-[550px] md:min-h-[700px] xs:min-h-0">
+    <div className=" bg-thirdcolor border border-zinc-800 w-80 md:w-full xs:aspect-[10/16] rounded-tl-3xl relative overflow-hidden shadow-2xl backdrop-blur-xl flex flex-col justify-between min-h-137.5 md:min-h-175 xs:min-h-0 ">
       {/* CARD BACKGROUND */}
       <div className="absolute inset-[-50%] flex flex-col justify-center items-center rotate-[45deg] opacity-10 pointer-events-none transition-opacity">
         {rows.map((_, rowIndex) => (
@@ -225,7 +225,7 @@ const CardPrices = ({
           {/* STAGE INDICATOR */}
           <div className="relative border-t-2 border-black flex items-center justify-between p-2 px-3 m-2">
             <div
-              className="absolute left-0 top-[-2px] bottom-0 bg-black"
+              className="absolute left-0 -top-0.5 bottom-0 bg-black"
               style={{
                 width: "70%",
                 clipPath: "polygon(0 0, 100% 0, 80% 100%, 0 100%)",
@@ -244,13 +244,13 @@ const CardPrices = ({
           {/* PREȚURI */}
           <div className="relative border-b-2 border-black flex items-center justify-between pt-2 px-3 pb-0 m-2">
             <div
-              className="absolute right-0 top-0 bottom-[-2px] bg-black"
+              className="absolute right-0 top-0 -bottom-0.5 bg-black"
               style={{
                 width: "70%",
                 clipPath: "polygon(20% 0, 100% 0, 100% 100%, 0 100%)",
               }}
             />
-            <div className="relative z-10 text-primary font-black text-lg sm:text-xl md:text-2xl tracking-tight pr-1 text-center w-full text-right flex items-baseline justify-end gap-2">
+            <div className="relative z-10 text-primary font-black text-lg sm:text-xl md:text-2xl tracking-tight pr-1  w-full text-right flex items-baseline justify-end gap-2">
               <span className="text-[10px] sm:text-xs font-normal lowercase">
                 de la{" "}
               </span>

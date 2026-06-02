@@ -13,11 +13,16 @@ import data from "../data/continut.json";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const iconMap: Record<string, any> = {
-  safe,
-  eficient,
-  fuel,
-  premium,
+type ShowcaseCard = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+type ShowcaseData = {
+  titluNormal: string;
+  titluColorat: string;
+  cards: ShowcaseCard[];
 };
 
 const CARD_HEIGHT = 380;
@@ -26,7 +31,7 @@ const ServicesShowCase = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement[]>([]);
 
-  const showcase = data.showcase4;
+  const showcase = data.showcase4 as ShowcaseData;
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -68,7 +73,7 @@ const ServicesShowCase = () => {
     <div
       id="showcase4"
       ref={sectionRef}
-      className="w-full h-screen flex flex-col items-start justify-start py-20 p-4 md:p-8 md:px-0 gap-8 overflow-hidden bg-black/50 md:bg-black/0  z-[2]"
+      className="w-full h-screen flex flex-col items-start justify-start py-20 p-4 md:p-8 md:px-0 gap-8 overflow-hidden bg-black/50 md:bg-black/0 z-2"
     >
       <h1 className="animate-title text-[1.2rem] leading-tight px-6 md:mx-35 text-white whitespace-nowrap">
         {showcase.titluNormal}
@@ -79,7 +84,7 @@ const ServicesShowCase = () => {
         className="relative w-full max-w-2xl mt-30 px-2 md:mx-35"
         style={{ height: CARD_HEIGHT }}
       >
-        {showcase.cards.map((card: any, index: number) => {
+        {showcase.cards.map((card: ShowcaseCard, index: number) => {
           const icons = [safe, eficient, fuel, premium];
 
           return (
@@ -91,7 +96,7 @@ const ServicesShowCase = () => {
               className="absolute inset-0"
               style={{ zIndex: index + 1 }}
             >
-              <div className="w-full h-full rounded-3xl border border-red-500/20 bg-gradient-to-br from-black via-zinc-950 to-black shadow-2xl overflow-hidden backdrop-blur-xl hover:border-red-400/40 transition-colors group cursor-pointer">
+              <div className="w-full h-full rounded-3xl border border-red-500/20 bg-linear-to-br from-black via-zinc-950 to-black shadow-2xl overflow-hidden backdrop-blur-xl hover:border-red-400/40 transition-colors group cursor-pointer">
                 <div className="p-6 md:p-8 flex flex-col gap-4 md:gap-6 text-white h-full justify-center">
                   <div className="flex items-center gap-3 md:gap-4">
                     <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-red-500/60 flex items-center justify-center bg-transparent shrink-0">
@@ -104,7 +109,7 @@ const ServicesShowCase = () => {
                       />
                     </div>
 
-                    <h3 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-red-200 via-white to-red-200 bg-clip-text text-transparent leading-tight">
+                    <h3 className="text-lg md:text-2xl font-bold bg-linear-to-r from-red-200 via-white to-red-200 bg-clip-text text-transparent leading-tight">
                       {card.title}
                     </h3>
                   </div>
@@ -113,7 +118,7 @@ const ServicesShowCase = () => {
                     {card.description}
                   </p>
 
-                  <div className="h-[2px] w-1/4 bg-gradient-to-r from-transparent via-red-500 to-transparent group-hover:w-1/2 transition-all duration-500" />
+                  <div className="h-0.5 w-1/4 bg-linear-to-r from-transparent via-red-500 to-transparent group-hover:w-1/2 transition-all duration-500" />
                 </div>
               </div>
             </div>

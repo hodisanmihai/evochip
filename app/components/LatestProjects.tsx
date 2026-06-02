@@ -19,6 +19,8 @@ const LatestProjects = () => {
   const [cardsPerPage, setCardsPerPage] = useState(4);
   const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
 
   const updateCardsPerPage = useCallback(() => {
     if (!containerRef.current) return;
@@ -62,6 +64,37 @@ const LatestProjects = () => {
     [totalPages],
   );
 
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartXRef.current = event.touches[0]?.clientX ?? null;
+    touchStartYRef.current = event.touches[0]?.clientY ?? null;
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null)
+      return;
+
+    const endX = event.changedTouches[0]?.clientX ?? null;
+    const endY = event.changedTouches[0]?.clientY ?? null;
+    if (endX === null || endY === null) return;
+
+    const deltaX = endX - touchStartXRef.current;
+    const deltaY = endY - touchStartYRef.current;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
+    const SWIPE_THRESHOLD = 50;
+
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+
+    if (absDeltaX < SWIPE_THRESHOLD || absDeltaX < absDeltaY) return;
+
+    if (deltaX < 0 && currentPage < totalPages - 1) {
+      goToPage(currentPage + 1);
+    } else if (deltaX > 0 && currentPage > 0) {
+      goToPage(currentPage - 1);
+    }
+  };
+
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
@@ -93,7 +126,9 @@ const LatestProjects = () => {
             width: "100%",
             maxWidth: "1200px",
           }}
-          className="rounded-2xl  md:rounded-3xl h-full border border-red-500/20 bg-gradient-to-br from-black via-zinc-950 to-black shadow-2xl overflow-hidden backdrop-blur-xl hover:border-red-400/40 transition-colors group"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="rounded-2xl  md:rounded-3xl h-full border border-red-500/20 bg-linear-to-br from-black via-zinc-950 to-black shadow-2xl overflow-hidden backdrop-blur-xl hover:border-red-400/40 transition-colors group"
         >
           <div className="p-4 md:p-8 flex  flex-col h-full  md:flex-col items-center gap-4 md:gap-6 text-white">
             {/* Grid carduri — 2 coloane pe mobil, flex pe desktop */}
@@ -105,7 +140,7 @@ const LatestProjects = () => {
               </div>
             </div>
 
-            <div className="h-[2px] w-1/2 bg-gradient-to-r from-transparent via-red-500 to-transparent   hidden md:block self-start" />
+            <div className="h-0.5 w-1/2 bg-linear-to-r from-transparent via-red-500 to-transparent   hidden md:block self-start" />
 
             {totalPages > 1 && (
               <div className="relative z-10 w-full flex items-center justify-center gap-3 pt-2 pb-1">
@@ -137,8 +172,8 @@ export default LatestProjects;
 
 const LatestCard = () => {
   return (
-    <div className="w-full md:w-full md:max-w-[340px] gap-4 flex-shrink-0 flex flex-col rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
-      <div className="w-full aspect-[16/10] overflow-hidden rounded-t-xl border-2 border-primary">
+    <div className="w-full md:w-full md:max-w-85 gap-4 shrink-0 flex flex-col rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
+      <div className="w-full aspect-16/10 overflow-hidden rounded-t-xl border-2 border-primary">
         <NextImage
           src={PlaceHolder}
           alt="Project Image"

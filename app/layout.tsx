@@ -84,7 +84,7 @@ export default function RootLayout({
   return (
     <html
       lang="ro"
-      className="h-full antialiased select-none bg-black overflow-x-hidden"
+      className="h-full antialiased select-none bg-black overflow-x-hidden overscroll-none"
     >
       <body className={`${montserrat.className} min-h-full flex flex-col`}>
         <div className="relative z-10 min-h-full flex-1">{children}</div>
