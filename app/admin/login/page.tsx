@@ -3,29 +3,48 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useNotification } from "@/app/admin/context/NotificationContext";
 
 const Page = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+  const { show } = useNotification();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     const supabase = createClient();
+    let loginEmail = username.trim();
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: username,
+    if (!loginEmail.includes("@")) {
+      const { data: fetchedEmail, error: rpcError } = await supabase.rpc(
+        "get_email_by_display_name",
+        { input_display_name: loginEmail },
+      );
+
+      if (rpcError || !fetchedEmail) {
+        show("Utilizatorul sau emailul nu a fost găsit.", "error");
+        setLoading(false);
+        return;
+      }
+
+      loginEmail = fetchedEmail;
+    }
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: loginEmail,
       password,
     });
-    if (error) {
-      setError(error.message);
+
+    if (authError) {
+      show(authError.message, "error");
+      setLoading(false);
     } else {
+      show("Te-ai logat cu succes!", "success");
       router.push("/admin");
       router.refresh();
     }
@@ -34,49 +53,34 @@ const Page = () => {
   return (
     <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black">
       <div className="relative w-full max-w-md p-6">
-        {error ? (
-          <div className="w-full flex flex-col justify-center items-center mb-6 rounded bg-red-500 p-6 text-white">
-            <div>{error}</div>
+        {/* errors are shown via global notification */}
+
+        <div className="rounded-md bg-[#111111] p-6 shadow-lg">
+          <h1 className="text-2xl font-bold mb-4 text-white">Admin Login</h1>
+          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+            <input
+              type="text"
+              placeholder="User sau Email"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="rounded-md border border-zinc-800 bg-[#222222] p-3 text-white outline-none focus:border-red-500"
+            />
+            <input
+              type="password"
+              placeholder="Parola"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="rounded-md border border-zinc-800 bg-[#222222] p-3 text-white outline-none focus:border-red-500"
+            />
             <button
-              type="button"
-              onClick={() => {
-                setError(null);
-                setLoading(false);
-              }}
-              className=" text-xl leading-none text-white hover:text-gray-200 focus:outline-none bg-[#111111] px-4 py-2 rounded-md mt-4 transition hover:bg-[#222222]"
-              aria-label="Close error"
+              type="submit"
+              disabled={loading}
+              className="rounded-md bg-red-500 px-4 py-3 font-bold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Inchide
+              {loading ? "Se încarcă..." : "Login"}
             </button>
-          </div>
-        ) : (
-          <div className="rounded-md bg-[#111111] p-6 shadow-lg">
-            <h1 className="text-2xl font-bold mb-4 text-white">Admin Login</h1>
-            <form onSubmit={handleLogin} className="flex flex-col gap-4">
-              <input
-                type="text"
-                placeholder="User sau Email"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="rounded-md border border-zinc-800 bg-[#222222] p-3 text-white outline-none focus:border-red-500"
-              />
-              <input
-                type="password"
-                placeholder="Parola"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="rounded-md border border-zinc-800 bg-[#222222] p-3 text-white outline-none focus:border-red-500"
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="rounded-md bg-red-500 px-4 py-3 font-bold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading ? "Se încarcă..." : "Login"}
-              </button>
-            </form>
-          </div>
-        )}
+          </form>
+        </div>
       </div>
     </div>
   );

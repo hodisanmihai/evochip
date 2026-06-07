@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useNotification } from "@/app/admin/context/NotificationContext";
 
 const supabase = createClient();
 
@@ -93,6 +94,7 @@ const SetUsernameForm = ({
   isSubmitting: boolean;
 }) => {
   const [inputValue, setInputValue] = useState("");
+  const { show } = useNotification();
 
   return (
     // fixed inset-0 garantează că overlay-ul acoperă tot ecranul perfect
@@ -103,6 +105,7 @@ const SetUsernameForm = ({
           e.preventDefault();
           if (inputValue.trim() && !isSubmitting) {
             onSetUsername(inputValue.trim());
+            show(`Binevenit, ${inputValue.trim()}!`, "success");
           }
         }}
       >
