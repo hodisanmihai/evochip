@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { PriceItem } from "./Page";
+import { PriceItem } from "./page";
 
 interface ListProps {
   selectedItem: PriceItem | null;

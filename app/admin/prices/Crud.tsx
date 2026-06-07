@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Form from "./Form";
-import { PriceItem } from "./Page";
+import { PriceItem } from "./page";
 import { useNotification } from "../context/NotificationContext";
 
 interface CrudProps {
