@@ -9,8 +9,8 @@ const supabase = createClient();
 
 export default function AdminHome() {
   const navLinks = [
-    { href: "/admin/prices", label: "Prețuri" },
     { href: "/admin/projects", label: "Proiecte" },
+    { href: "/admin/prices", label: "Prețuri" },
     { href: "/admin/contact", label: "Contact" },
   ];
 

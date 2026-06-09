@@ -34,7 +34,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <NotificationProvider>
       <div className="h-screen bg-black text-white flex flex-col md:flex-row overflow-hidden">
         <header className="flex items-center justify-between p-4 border-b border-zinc-800 md:hidden bg-black z-50 shrink-0">
-          <h1 className="text-xl font-bold text-red-500">Admin</h1>
+          <Link href="/admin/">
+            <h1 className="text-xl font-bold text-red-500">Admin</h1>
+          </Link>
           <button
             onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 text-zinc-400 hover:text-white focus:outline-none"
@@ -52,11 +54,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
           `}
         >
-          <h1 className="text-xl font-bold text-red-500 hidden md:block">
-            Admin
-          </h1>
+          <Link href="/admin/">
+            <h1 className="text-xl font-bold text-red-500">Admin</h1>
+          </Link>
 
-          <nav className="flex flex-col gap-3 text-sm pt-12 md:pt-0">
+          <nav className="flex flex-col gap-3 text-sm pt-12 md:pt-0 items-start">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -67,8 +69,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 {link.label}
               </Link>
             ))}
+            <button
+              onClick={handleLogOut}
+              className="hover:text-red-400 p-2 md:p-0 rounded-md"
+            >
+              Log Out
+            </button>
           </nav>
-          <button onClick={handleLogOut}>Log Out</button>
         </aside>
 
         {isMobileMenuOpen && (

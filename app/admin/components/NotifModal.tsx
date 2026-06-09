@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useCallback, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 
 interface NotifModalProps {
@@ -20,7 +20,7 @@ const NotifModal = ({
   const color = variant === "success" ? "forestgreen" : "indianred";
   const title = variant === "success" ? "Success !" : "Error !";
 
-  const triggerExitAnimation = () => {
+  const triggerExitAnimation = useCallback(() => {
     if (modalRef.current) {
       gsap.to(modalRef.current, {
         opacity: 0,
@@ -32,7 +32,7 @@ const NotifModal = ({
     } else {
       onClose();
     }
-  };
+  }, [onClose]);
 
   useLayoutEffect(() => {
     if (modalRef.current) {
@@ -50,7 +50,7 @@ const NotifModal = ({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, []);
+  }, [triggerExitAnimation]);
 
   const handleManualClose = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -60,7 +60,7 @@ const NotifModal = ({
   return (
     <div
       ref={modalRef}
-      className="fixed top-4 right-4 z-100 flex items-center justify-center p-4 will-change-transform"
+      className="fixed top-4 right-4 z-10000 flex items-center justify-center p-4 will-change-transform"
     >
       <div className="flex w-full max-w-96 h-24 overflow-hidden bg-[#111111] border border-zinc-800 shadow-2xl rounded-xl relative">
         <svg

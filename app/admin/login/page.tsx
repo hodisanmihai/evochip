@@ -35,13 +35,13 @@ const Page = () => {
       loginEmail = fetchedEmail;
     }
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email: loginEmail,
       password,
     });
 
-    if (authError) {
-      show(authError.message, "error");
+    if (error) {
+      show(error.message, "error");
       setLoading(false);
     } else {
       show("Te-ai logat cu succes!", "success");
