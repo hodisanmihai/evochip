@@ -27,9 +27,9 @@ interface StageOption {
   id: number;
   solution_name: string;
 }
-
-const PROJECT_IMAGE_BUCKET = "car-files/car-files";
-const PROJECT_FILE_BUCKET = "car-files/car-photos";
+const BUCKET = "car-files";
+const PROJECT_IMAGE_FOLDER = "car-photos";
+const PROJECT_FILE_FOLDER = "car-dyno";
 
 const inputClass =
   "w-full p-2.5 rounded-md bg-[#222222] border border-zinc-800 text-white focus:outline-none focus:border-red-500 placeholder-zinc-600";
@@ -54,22 +54,24 @@ const getSafeStorageName = (fileName: string) => {
   return `${Date.now()}-${baseName || "upload"}.${extension}`;
 };
 
-const getPublicStorageUrl = (bucket: string, path: string): Promise<string> => {
+const uploadPublicFile = async (folder: string, file: File) => {
   const supabase = createClient();
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-  return Promise.resolve(data.publicUrl);
-};
+  const path = `${folder}/${getSafeStorageName(file.name)}`;
 
-const uploadPublicFile = async (bucket: string, file: File) => {
-  const supabase = createClient();
-  const path = getSafeStorageName(file.name);
-  const { error } = await supabase.storage.from(bucket).upload(path, file, {
-    cacheControl: "3600",
-    upsert: false,
-  });
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
 
   if (error) throw error;
-  return getPublicStorageUrl(bucket, path);
+
+  const { data: urlData } = supabase.storage
+    .from(BUCKET)
+    .getPublicUrl(data.path);
+
+  return urlData.publicUrl;
 };
 
 const createImage = (url: string) =>
@@ -254,15 +256,47 @@ const initialProjectState: ProjectFields = {
 };
 
 const getProjectMods = (mods: ProjectItem["mods"]): string[] => {
-  if (Array.isArray(mods)) {
-    return mods.filter((mod): mod is string => typeof mod === "string");
+  if (!mods) return [];
+
+  // Dacă e string, încearcă să-l parseze ca JSON mai întâi
+  if (typeof mods === "string") {
+    try {
+      const parsed = JSON.parse(mods);
+      if (Array.isArray(parsed)) {
+        // Parsează recursiv dacă elementele sunt tot JSON strings
+        return parsed
+          .map((m) => {
+            try {
+              return JSON.parse(m);
+            } catch {
+              return m;
+            }
+          })
+          .filter((m): m is string => typeof m === "string");
+      }
+    } catch {
+      // Nu e JSON, split după virgulă
+      return mods
+        .split(",")
+        .map((m) => m.trim())
+        .filter(Boolean);
+    }
   }
 
-  if (typeof mods === "string") {
+  if (Array.isArray(mods)) {
     return mods
-      .split(",")
-      .map((mod) => mod.trim())
-      .filter(Boolean);
+      .map((m) => {
+        // Fiecare element poate fi un JSON string la rândul lui
+        if (typeof m === "string") {
+          try {
+            return JSON.parse(m);
+          } catch {
+            return m;
+          }
+        }
+        return String(m);
+      })
+      .filter((m): m is string => typeof m === "string");
   }
 
   return [];
@@ -270,6 +304,9 @@ const getProjectMods = (mods: ProjectItem["mods"]): string[] => {
 
 const getProjectState = (item?: ProjectItem | null): ProjectFields => {
   if (!item) return initialProjectState;
+
+  console.log("dyno_file_url:", item.dyno_file_url);
+  console.log("image_url:", item.image_url);
 
   return {
     brand_id: item.brand_id ?? null,
@@ -387,11 +424,19 @@ const ProjectImageUpload = ({
         croppedAreaPixels,
         fileName,
       );
+
+      if (value) {
+        const supabase = createClient();
+        const oldPath = value.split(`/storage/v1/object/public/${BUCKET}/`)[1];
+        if (oldPath) {
+          await supabase.storage.from(BUCKET).remove([oldPath]);
+        }
+      }
+
       const publicUrl = await uploadPublicFile(
-        PROJECT_IMAGE_BUCKET,
+        PROJECT_IMAGE_FOLDER,
         croppedFile,
       );
-
       onChange(publicUrl);
       setImageSrc(null);
     } catch (err: unknown) {
@@ -500,7 +545,8 @@ const ProjectFileUpload = ({
   onChange: (url: string) => void;
 }) => {
   const [uploading, setUploading] = useState(false);
-  const [fileName, setFileName] = useState("");
+  const [fileName, setFileName] = useState(() => value.split("/").pop() || "");
+
   const [error, setError] = useState<string | null>(null);
 
   const handleSelectFile = async (file?: File) => {
@@ -510,7 +556,16 @@ const ProjectFileUpload = ({
     setUploading(true);
     setFileName(file.name);
     try {
-      const publicUrl = await uploadPublicFile(PROJECT_FILE_BUCKET, file);
+      // Șterge fișierul vechi dacă există
+      if (value) {
+        const supabase = createClient();
+        const oldPath = value.split(`/storage/v1/object/public/${BUCKET}/`)[1];
+        if (oldPath) {
+          await supabase.storage.from(BUCKET).remove([oldPath]);
+        }
+      }
+
+      const publicUrl = await uploadPublicFile(PROJECT_FILE_FOLDER, file);
       onChange(publicUrl);
     } catch (err: unknown) {
       const message =
@@ -522,6 +577,7 @@ const ProjectFileUpload = ({
       setUploading(false);
     }
   };
+  console.log("value:", value, "uploading:", uploading);
 
   return (
     <div className="flex flex-col gap-2">
@@ -531,6 +587,20 @@ const ProjectFileUpload = ({
         onChange={(e) => handleSelectFile(e.target.files?.[0])}
         className={inputClass}
       />
+      {value && !uploading && (
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition"
+        >
+          <span>📎</span>
+          <span className="truncate max-w-[260px]">
+            {value.split("/").pop()}
+          </span>
+          <span className="text-zinc-600">— deschide</span>
+        </a>
+      )}
 
       {uploading && (
         <p className="text-xs text-zinc-400">
@@ -538,25 +608,22 @@ const ProjectFileUpload = ({
         </p>
       )}
 
-      {value && !uploading && (
-        <div className="flex items-center justify-between gap-3 rounded-md border border-zinc-800 bg-[#222222] px-3 py-2">
-          <a
-            href={value}
-            target="_blank"
-            rel="noreferrer"
-            className="truncate text-sm text-white hover:text-red-300"
-          >
-            {fileName || value.split("/").pop() || "Fisier incarcat"}
-          </a>
-          <button
-            type="button"
-            onClick={() => onChange("")}
-            className="shrink-0 text-xs font-semibold text-red-400 hover:text-red-300"
-          >
-            Sterge
-          </button>
-        </div>
-      )}
+      <button
+        type="button"
+        onClick={async () => {
+          const supabase = createClient();
+          const oldPath = value.split(
+            `/storage/v1/object/public/${BUCKET}/`,
+          )[1];
+          if (oldPath) {
+            await supabase.storage.from(BUCKET).remove([oldPath]);
+          }
+          onChange("");
+        }}
+        className="shrink-0 text-xs font-semibold text-red-400 hover:text-red-300"
+      >
+        Sterge
+      </button>
 
       {error && <p className="text-xs text-red-400">Eroare upload: {error}</p>}
     </div>
