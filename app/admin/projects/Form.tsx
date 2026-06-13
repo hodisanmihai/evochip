@@ -595,9 +595,7 @@ const ProjectFileUpload = ({
           className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition"
         >
           <span>📎</span>
-          <span className="truncate max-w-[260px]">
-            {value.split("/").pop()}
-          </span>
+          <span className="truncate max-w-65">{value.split("/").pop()}</span>
           <span className="text-zinc-600">— deschide</span>
         </a>
       )}
