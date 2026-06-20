@@ -116,6 +116,7 @@ const List = ({
         : item.mods || "";
       const searchableText = [
         item.car_models?.car_brands?.car_brand,
+        item.car_models?.car_model,
         item.combustion,
         item.engine_capacity,
         item.engine_code,
@@ -338,7 +339,7 @@ const List = ({
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-base font-bold text-white">
-                          {brandName} {item.car_models.car_model || ""}
+                          {brandName} {item.car_models?.car_model || ""}
                         </h3>
                         <p className="text-xs text-zinc-500 mt-0.5">
                           {item.combustion || "—"} ·{" "}
