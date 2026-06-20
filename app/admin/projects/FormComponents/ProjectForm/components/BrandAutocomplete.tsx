@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CarModel } from "./types";
+import { CarBrand } from "../../../types";
 
 interface BrandAutocompleteProps {
   value: number | null;
   onChange: (brandId: number, brandName: string) => void;
-  onCreated?: (brand: CarModel) => void;
+  onCreated?: (brand: CarBrand) => void;
 }
 
 const BrandAutocomplete = ({
@@ -16,31 +16,37 @@ const BrandAutocomplete = ({
   onCreated,
 }: BrandAutocompleteProps) => {
   const [query, setQuery] = useState("");
-  const [brands, setBrands] = useState<CarModel[]>([]);
+  const [brands, setBrands] = useState<CarBrand[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [loading, setLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Load brands on mount
   useEffect(() => {
     const fetchBrands = async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("car_models")
-        .select("id, car_brand")
-        .order("car_brand", { ascending: true });
-      setBrands(data || []);
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("car_brands")
+          .select("id, car_brand")
+          .order("car_brand", { ascending: true });
+        setBrands(data || []);
+      } catch (error) {
+        console.error("Error fetching brands:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchBrands();
   }, []);
 
-  // Compute derived values instead of storing in state to avoid setState in effects
   const selectedLabel = useMemo(() => {
-    if (value && brands.length > 0) {
-      const found = brands.find((b) => b.id === value);
-      return found?.car_brand || "";
-    }
-    return "";
+    if (!value) return "";
+
+    const found = brands.find((b) => b.id === value);
+
+    return found?.car_brand || "";
   }, [value, brands]);
 
   const filtered = useMemo(() => {
@@ -48,7 +54,7 @@ const BrandAutocomplete = ({
       return brands;
     }
     return brands.filter((b) =>
-      b.car_brand.toLowerCase().includes(query.toLowerCase()),
+      b.car_brand.toLowerCase().includes(query.toLowerCase())
     );
   }, [query, brands]);
 
@@ -66,7 +72,7 @@ const BrandAutocomplete = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (brand: CarModel) => {
+  const handleSelect = (brand: CarBrand) => {
     onChange(brand.id, brand.car_brand);
     setQuery("");
     setIsOpen(false);
@@ -75,23 +81,30 @@ const BrandAutocomplete = ({
   const handleCreate = async () => {
     if (!query.trim()) return;
     setCreating(true);
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("car_models")
-      .insert([{ car_brand: query.trim() }])
-      .select()
-      .single();
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("car_brands")
+        .insert([{ car_brand: query.trim() }])
+        .select()
+        .single();
 
-    if (!error && data) {
-      setBrands((prev) => [...prev, data]);
-      handleSelect(data);
-      onCreated?.(data);
+      if (!error && data) {
+        setBrands((prev) =>
+          [...prev, data].sort((a, b) => a.car_brand.localeCompare(b.car_brand))
+        );
+        handleSelect(data);
+        onCreated?.(data);
+      }
+    } catch (error) {
+      console.error("Error creating brand:", error);
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
   };
 
   const exactMatch = brands.some(
-    (b) => b.car_brand.toLowerCase() === query.toLowerCase(),
+    (b) => b.car_brand.toLowerCase() === query.toLowerCase()
   );
 
   return (
@@ -101,7 +114,7 @@ const BrandAutocomplete = ({
       {/* Display selected value */}
       {selectedLabel && !isOpen && (
         <div
-          className="w-full p-2.5 rounded-md bg-[#222222] border border-zinc-700 text-white cursor-pointer flex justify-between items-center"
+          className="w-full p-2.5 rounded-md bg-[#222222] border border-zinc-700 text-white cursor-pointer flex justify-between items-center hover:border-zinc-600 transition-colors"
           onClick={() => {
             setQuery("");
             setIsOpen(true);
@@ -131,24 +144,37 @@ const BrandAutocomplete = ({
       {/* Dropdown */}
       {isOpen && (
         <div className="absolute z-50 mt-1 w-full bg-[#1a1a1a] border border-zinc-700 rounded-md shadow-xl max-h-52 overflow-y-auto">
-          {filtered.length === 0 && !query && (
+          {loading && (
+            <div className="px-3 py-2 text-zinc-500 text-sm">
+              Se încarcă branduri...
+            </div>
+          )}
+
+          {!loading && filtered.length === 0 && !query && (
             <div className="px-3 py-2 text-zinc-500 text-sm">
               Niciun brand găsit.
             </div>
           )}
 
-          {filtered.map((brand) => (
-            <div
-              key={brand.id}
-              onMouseDown={() => handleSelect(brand)}
-              className="px-3 py-2 text-sm text-white hover:bg-zinc-700 cursor-pointer transition-colors"
-            >
-              {brand.car_brand}
+          {!loading && filtered.length === 0 && query && (
+            <div className="px-3 py-2 text-zinc-500 text-sm">
+              Niciun brand nu se potrivește cu {query}
             </div>
-          ))}
+          )}
+
+          {!loading &&
+            filtered.map((brand) => (
+              <div
+                key={brand.id}
+                onMouseDown={() => handleSelect(brand)}
+                className="px-3 py-2 text-sm text-white hover:bg-zinc-700 cursor-pointer transition-colors"
+              >
+                {brand.car_brand}
+              </div>
+            ))}
 
           {/* Create new option */}
-          {query.trim() && !exactMatch && (
+          {!loading && query.trim() && !exactMatch && (
             <div
               onMouseDown={handleCreate}
               className="px-3 py-2 text-sm text-green-400 hover:bg-zinc-700 cursor-pointer transition-colors flex items-center gap-2 border-t border-zinc-700"

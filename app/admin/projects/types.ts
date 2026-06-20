@@ -1,14 +1,25 @@
-export type EntityType = "projects" | "car_models" | "remaps";
+export type EntityType = "projects" | "car_brands" | "remaps";
 
-export interface CarModel {
+export interface CarBrand {
   id: number;
   car_brand: string;
 }
 
 export interface ProjectItem {
-  id: string | number;
-  brand_id: number | null;
-  car_model: string;
+  id: number;
+  car_models: {
+    id: number;
+
+    car_model: string;
+
+    car_brand: number;
+
+    car_brands?: {
+      id: number;
+
+      car_brand: string;
+    };
+  };
   combustion: string;
   engine_capacity: number | null;
   engine_code: string;
@@ -19,11 +30,10 @@ export interface ProjectItem {
   new_torque: number | null;
   note: string;
   image_url: string;
+  dyno_file_url: string;
+  video_url: string;
   mods: string[] | string | null;
   stage: number | null;
-  dyno_file_url: string;
-  created_at?: string;
-  car_models?: CarModel;
 }
 
 export interface CarModelItem {
@@ -36,6 +46,24 @@ export interface RemapItem {
   id: string | number;
   solution_name: string;
   created_at?: string;
+}
+
+export interface ProjectFields {
+  car_models: number | null;
+  combustion: string;
+  engine_capacity: string;
+  engine_code: string;
+  transmition: string;
+  initial_power: string;
+  initial_torque: string;
+  new_power: string;
+  new_torque: string;
+  note: string;
+  mods: string[];
+  stage: number | null;
+  image_url: string;
+  dyno_file_url: string;
+  video_url: string;
 }
 
 export type AnyItem = ProjectItem | CarModelItem | RemapItem;

@@ -19,7 +19,7 @@ const CarDropDown = () => {
 
       // Fetch branduri
       const { data: carModels } = await supabase
-        .from("car_models")
+        .from("car_brands")
         .select("id, car_brand")
         .order("car_brand", { ascending: true });
 
@@ -36,7 +36,7 @@ const CarDropDown = () => {
           ...new Set(
             (projects || [])
               .filter((p) => p.brand_id === brand.id && p.car_model)
-              .map((p) => p.car_model),
+              .map((p) => p.car_model)
           ),
         ];
         return { ...brand, models };

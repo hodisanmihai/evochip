@@ -23,7 +23,7 @@ interface ListProps {
 
 const ITEMS_PER_PAGE: Record<EntityType, number> = {
   projects: 6,
-  car_models: 12,
+  car_brands: 12,
   remaps: Infinity,
 };
 
@@ -48,9 +48,9 @@ const List = ({
       try {
         const supabase = createClient();
 
-        if (type === "car_models") {
+        if (type === "car_brands") {
           const { data, error: supabaseError } = await supabase
-            .from("car_models")
+            .from("car_brands")
             .select("*")
             .order("car_brand", { ascending: true });
 
@@ -67,7 +67,19 @@ const List = ({
         } else {
           const { data, error: supabaseError } = await supabase
             .from("projects")
-            .select("*, car_models(id, car_brand)")
+            .select(
+              `
+              *,
+              car_models (
+                id,
+                car_model,
+                car_brands (
+                  id,
+                  car_brand
+                )
+              )
+            `
+            )
             .order("id", { ascending: false });
 
           if (supabaseError) throw supabaseError;
@@ -92,9 +104,9 @@ const List = ({
 
     if (!query || type === "remaps") return items;
 
-    if (type === "car_models") {
+    if (type === "car_brands") {
       return (items as CarModelItem[]).filter((item) =>
-        item.car_brand.toLowerCase().includes(query),
+        item.car_brand.toLowerCase().includes(query)
       );
     }
 
@@ -103,8 +115,7 @@ const List = ({
         ? item.mods.join(" ")
         : item.mods || "";
       const searchableText = [
-        item.car_models?.car_brand,
-        item.car_model,
+        item.car_models?.car_brands?.car_brand,
         item.combustion,
         item.engine_capacity,
         item.engine_code,
@@ -134,7 +145,7 @@ const List = ({
     return filteredItems.slice(start, start + pageSize);
   }, [filteredItems, currentPage, pageSize]);
 
-  const showSearch = type === "projects" || type === "car_models";
+  const showSearch = type === "projects" || type === "car_brands";
   const searchPlaceholder =
     type === "projects"
       ? "Cauta proiect dupa brand, model, motor..."
@@ -218,16 +229,16 @@ const List = ({
   if (items.length === 0)
     return (
       <div className="text-zinc-400 p-4">
-        {type === "car_models"
+        {type === "car_brands"
           ? "Nu există branduri salvate."
           : type === "remaps"
-            ? "Nu exista solutii salvate."
-            : "Nu există proiecte salvate."}
+          ? "Nu exista solutii salvate."
+          : "Nu există proiecte salvate."}
       </div>
     );
 
-  // --- Car Models List ---
-  if (type === "car_models") {
+  // --- Car  Brands List ---
+  if (type === "car_brands") {
     return (
       <div className="w-full flex flex-col">
         {SearchBar}
@@ -311,7 +322,7 @@ const List = ({
               {(paginatedItems as ProjectItem[]).map((item) => {
                 const isSelected = selectedItem?.id === item.id;
                 const brandName =
-                  item.car_models?.car_brand ?? "Brand necunoscut";
+                  item.car_models?.car_brands?.car_brand ?? "Brand necunoscut";
 
                 return (
                   <div
@@ -327,7 +338,7 @@ const List = ({
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="text-base font-bold text-white">
-                          {brandName} {item.car_model || ""}
+                          {brandName} {item.car_models.car_model || ""}
                         </h3>
                         <p className="text-xs text-zinc-500 mt-0.5">
                           {item.combustion || "—"} ·{" "}

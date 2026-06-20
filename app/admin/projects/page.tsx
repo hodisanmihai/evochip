@@ -41,9 +41,9 @@ const Page = () => {
           Proiecte
         </button>
         <button
-          onClick={() => handleTabChange("car_models")}
+          onClick={() => handleTabChange("car_brands")}
           className={`px-4 py-2 rounded-md transition ${
-            activeTab === "car_models"
+            activeTab === "car_brands"
               ? "bg-primary text-white"
               : "bg-zinc-800 text-gray-400"
           }`}
@@ -65,9 +65,9 @@ const Page = () => {
       <h1 className="text-2xl font-bold mb-4 capitalize">
         {activeTab === "projects"
           ? "Gestionare Proiecte"
-          : activeTab === "car_models"
-            ? "Gestionare Branduri"
-            : "Gestionare Solutii"}
+          : activeTab === "car_brands"
+          ? "Gestionare Branduri"
+          : "Gestionare Solutii"}
       </h1>
 
       <div className="p-4 rounded-md flex items-center justify-center flex-col gap-6">
