@@ -46,6 +46,26 @@ h2 {
   font-size: 2rem;
   font-weight: 400;
   @media (max-width: 768px) {
-    font-size: 1.4rem; /* Diminuăm la 1.2rem pentru ecrane mici */
+    font-size: 1.4rem;
+  }
+}
+
+.clip-mobile {
+  clip-path: polygon(
+    85% 0,
+    85% 42%,
+    100% 44%,
+    100% 59%,
+    85% 61%,
+    85% 100%,
+    0 100%,
+    0% 35%,
+    0 0
+  );
+}
+
+@media (min-width: 768px) {
+  .clip-mobile {
+    clip-path: none;
   }
 }
