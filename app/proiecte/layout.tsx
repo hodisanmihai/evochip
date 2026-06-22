@@ -7,7 +7,7 @@ import Footer from "../components/Footer";
 import { CarFilterProvider } from "./context/CarFilterContext";
 
 export default function ProiecteLayout({ children }: { children: ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <CarFilterProvider>

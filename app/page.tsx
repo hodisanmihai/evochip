@@ -1,47 +1,12 @@
-"use client";
+import { getLandingData } from "@/lib/supabase/services/landing";
+import HomeClient from "./components/HomeClient";
 
-import Intro from "./components/Intro";
-import HeroPage from "./components/HeroPage";
-import ShowCase from "./components/ShowCase";
-import { useCallback, useState } from "react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import ServicesShowCase from "./components/ServicesShowCase";
-import LatestProjects from "./components/LatestProjects";
-import Background from "./components/Background";
-import Prices from "./components/Prices";
-import Contact from "./components/Contact";
-import Footer from "./components/Footer";
-import NavBar from "./components/NavBar";
-
-export default function Home() {
-  const [showIntro, setShowIntro] = useState(true);
-  const [showHero, setShowHero] = useState(false);
-
-  const revealHero = useCallback(() => {
-    setShowHero(true);
-    setTimeout(() => ScrollTrigger.refresh(), 800);
-  }, []);
-  const finishIntro = useCallback(() => {
-    setShowIntro(false);
-  }, []);
+export default async function Home() {
+  const { projects, prices, contact } = await getLandingData();
 
   return (
     <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center ">
-      {showIntro && (
-        <Intro onRevealHero={revealHero} onComplete={finishIntro} />
-      )}
-
-      {showHero && <HeroPage />}
-      {showHero && <ShowCase />}
-      {showHero && <ServicesShowCase />}
-
-      {showHero && <LatestProjects />}
-      {showHero && <NavBar />}
-      {showHero && <Prices />}
-      {showHero && <Contact />}
-      {showHero && <Footer />}
-
-      <Background isVisible={showHero} />
+      <HomeClient projects={projects} prices={prices} contact={contact} />
     </main>
   );
 }

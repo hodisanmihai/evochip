@@ -13,11 +13,26 @@ import {
 import gsap from "gsap";
 import evoChipLogo from "../../public/resources/LOGO-EVOCHIP.png";
 
-const NavBar: React.FC = () => {
+type NavbarProps = {
+  contact: any;
+};
+
+const NavBar = ({ contact }: NavbarProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const linksRef = useRef<HTMLAnchorElement[]>([]);
+
+  const getMessengerLink = (facebookUrl?: string) => {
+    if (!facebookUrl) return "#";
+
+    const username = facebookUrl
+      .replace("https://www.facebook.com/", "")
+      .replace("https://facebook.com/", "")
+      .replace("/", "");
+
+    return `https://m.me/${username}`;
+  };
 
   const links = [
     { label: "Acasă", href: "#" },
@@ -27,23 +42,23 @@ const NavBar: React.FC = () => {
 
   const social = [
     {
-      id: "facebook",
-      href: "https://www.facebook.com/yourusername",
+      id: contact.facebook_url || "fb",
+      href: contact.facebook_url,
       icon: <FaFacebook className="w-4 h-4" />,
     },
     {
-      id: "instagram",
-      href: "https://www.instagram.com/yourusername",
+      id: contact.instagram_url || "insta",
+      href: contact.instagram_url,
       icon: <FaInstagram className="w-4 h-4" />,
     },
     {
-      id: "tiktok",
-      href: "https://www.tiktok.com/@yourusername",
+      id: contact.tiktok_url || "tiktok",
+      href: contact.tiktok_url,
       icon: <FaTiktok className="w-4 h-4" />,
     },
     {
       id: "messenger",
-      href: "https://m.me/yourusername",
+      href: getMessengerLink(contact?.facebook_url),
       icon: <FaFacebookMessenger className="w-4 h-4" />,
     },
   ];
@@ -67,13 +82,13 @@ const NavBar: React.FC = () => {
       gsap.fromTo(
         overlayRef.current,
         { autoAlpha: 0 },
-        { autoAlpha: 1, duration: 0.2, ease: "power1.out" },
+        { autoAlpha: 1, duration: 0.2, ease: "power1.out" }
       );
 
       gsap.fromTo(
         menuRef.current,
         { y: -20, autoAlpha: 0, scale: 0.98 },
-        { y: 0, autoAlpha: 1, scale: 1, duration: 0.35, ease: "power3.out" },
+        { y: 0, autoAlpha: 1, scale: 1, duration: 0.35, ease: "power3.out" }
       );
 
       gsap.fromTo(
@@ -86,7 +101,7 @@ const NavBar: React.FC = () => {
           stagger: 0.1,
           ease: "power3.out",
           delay: 0.15,
-        },
+        }
       );
     }, overlayRef);
 

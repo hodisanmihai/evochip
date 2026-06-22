@@ -9,17 +9,31 @@ import {
   FaFacebookMessenger,
 } from "react-icons/fa";
 
-const Footer: React.FC = () => {
+type FooterProps = {
+  contact: any;
+};
+
+const Footer = ({ contact }: FooterProps) => {
+  const getMessengerLink = (facebookUrl?: string) => {
+    if (!facebookUrl) return "#";
+
+    const username = facebookUrl
+      .replace("https://www.facebook.com/", "")
+      .replace("https://facebook.com/", "")
+      .replace("/", "");
+
+    return `https://m.me/${username}`;
+  };
   const currentYear = new Date().getFullYear();
 
-  const phone = "+40740344530";
-  const email = "contact@evochip.ro";
+  const phone = `+${contact.telefon}`;
+  const email = contact.email;
   const address = "Oradea, Romania";
 
-  const instagram = "https://www.instagram.com/evochiporadea/";
-  const facebook = "https://www.facebook.com/Ev0Chip/";
-  const tiktok = "https://www.tiktok.com/@evochip";
-  const messenger = "https://m.me/Ev0Chip";
+  const instagram = contact.instagram_url;
+  const facebook = contact.instagram_url;
+  const tiktok = contact.tiktok_url;
+  const messenger = getMessengerLink(contact?.facebook_url);
 
   const links = [
     { label: "Acasă", href: "#" },

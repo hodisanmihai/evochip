@@ -10,14 +10,29 @@ import {
   FaWhatsapp,
 } from "react-icons/fa";
 
-const Contact: React.FC = () => {
-  const phone = "+40740344530";
-  const phoneLink = "tel:+40740344530";
-  const whatsappLink = "https://wa.me/+40740344530";
-  const instagram = "https://www.instagram.com/evochiporadea/";
-  const messenger = "https://m.me/Ev0Chip";
-  const facebook = "https://www.facebook.com/Ev0Chip/";
-  const tiktok = "https://www.tiktok.com/@evochip";
+type ContactProps = {
+  contact: any;
+};
+
+const Contact = ({ contact }: ContactProps) => {
+  const getMessengerLink = (facebookUrl?: string) => {
+    if (!facebookUrl) return "#";
+
+    const username = facebookUrl
+      .replace("https://www.facebook.com/", "")
+      .replace("https://facebook.com/", "")
+      .replace("/", "");
+
+    return `https://m.me/${username}`;
+  };
+  const phone = contact.telefon;
+  const phoneLink = `tel:+${contact.telefon}`;
+  const whatsappLink = `https://wa.me/+${contact.telefon}`;
+  const instagram = contact.instagram_url;
+  const messenger = getMessengerLink(contact?.facebook_url);
+  const facebook = contact.facebook_url;
+  const tiktok = contact.tiktok_url;
+  const email = contact.email;
 
   const cards = [
     {
@@ -141,10 +156,10 @@ const Contact: React.FC = () => {
           <div className="text-sm text-zinc-400 self-start md:self-end">
             Preferi un email?{" "}
             <a
-              href="mailto:contact@domeniu.ro"
+              href={`mailto:${email}`}
               className="text-primary hover:underline block md:inline mt-1 md:mt-0"
             >
-              contact@domeniu.ro
+              {email}
             </a>
           </div>
         </div>

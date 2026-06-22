@@ -3,7 +3,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
-const Prices = () => {
+type PricesProps = {
+  prices: any[];
+  contact: any;
+};
+
+const Prices = ({ prices, contact }: PricesProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -34,7 +39,7 @@ const Prices = () => {
           observer.unobserve(section);
         }
       },
-      { threshold: 0.3 },
+      { threshold: 0.3 }
     );
 
     observer.observe(section);
@@ -87,74 +92,6 @@ const Prices = () => {
     };
   }, []);
 
-  const pricingData = [
-    {
-      id: "stage-1",
-      title: "STAGE I",
-      price: "1000 RON",
-      description: "Performanță pentru condusul zilnic",
-      benefits: [
-        "<strong>+20% până la +30%</strong> Cai Putere & Cuplu",
-        "Scăderea consumului cu până la <strong>10%</strong> la mers constant",
-        "Răspuns instantaneu al pedalei de accelerație",
-        "Componentele mecanice rămân <strong>100% originale</strong>",
-        "Diagnoză completă inclusă (înainte și după soft)",
-      ],
-    },
-    {
-      id: "stage-2",
-      title: "STAGE II",
-      price: "1500 RON",
-      description: "Optimizare avansată cu modificări hardware",
-      benefits: [
-        "<strong>+35% până la +45%</strong> Cai Putere & Cuplu",
-        "Necesită modificări mecanice (evacuare / admisie)",
-        "Livrări de putere agresive pe toată plaja de turații",
-        "Dezactivare limitări electronice de fabrică",
-        "Diagnoză dedicată și monitorizare parametri în timp real",
-      ],
-    },
-    {
-      id: "stage-3",
-      title: "STAGE III",
-      price: "2500 RON",
-      description: "Performanță extremă pentru entuziaști",
-      benefits: [
-        "<strong>Peste +50%</strong> putere față de stoc",
-        "Configurație custom pentru turbo mărit și intercooler",
-        "Hărți calibrate individual pe standul dyno",
-        "Ranforsare electronică a protecțiilor motorului",
-        "Asistență tehnică completă pentru componente upgrade",
-      ],
-    },
-    {
-      id: "stage-x",
-      title: "STAGE X",
-      price: "3500 RON",
-      description: "Proiecte speciale și calibrări motorsport",
-      benefits: [
-        "Soluții software unice <strong>100% Custom Custom</strong>",
-        "Opțiuni incluse: Pop & Bangs, Hard Limiter, Launch Control",
-        "Calibrare combustibili alternativi sau hibrizi",
-        "Dezvoltare hărți specifice pentru competiții sau circuit",
-        "Suport tehnic dedicat pe toată durata proiectului",
-      ],
-    },
-    {
-      id: "diagnoza",
-      title: "DIAGNOZĂ",
-      price: "200 RON",
-      description: "Identificare erori și verificare parametri",
-      benefits: [
-        "Scanare completă a tuturor modulelor electronice",
-        "Citire parametri în timp real (presiune turbo, injectoare)",
-        "Interpretare profesională a codurilor de eroare active",
-        "Ștergere martori bord și resetare intervale service",
-        "Raport detaliat generat direct pe mail sau WhatsApp",
-      ],
-    },
-  ];
-
   return (
     <div
       ref={sectionRef}
@@ -174,18 +111,29 @@ const Prices = () => {
             isDragging ? "cursor-grabbing" : "cursor-grab"
           }`}
         >
-          {pricingData.map((stage) => (
-            <div
-              key={stage.id}
-              className="shrink-0 72.5 xs:w-[350px] sm:w-100 md:p-4 mx-4 md:mx-0"
-            >
-              <CardPrices
-                title={stage.title}
-                price={stage.price}
-                benefits={stage.benefits}
-              />
-            </div>
-          ))}
+          {prices.map((stage) => {
+            const benefits = [
+              stage.text_1,
+              stage.text_2,
+              stage.text_3,
+              stage.text_4,
+              stage.text_5,
+            ].filter(Boolean);
+
+            return (
+              <div
+                key={stage.id}
+                className="shrink-0 72.5 xs:w-[350px] sm:w-100 md:p-4 mx-4 md:mx-0"
+              >
+                <CardPrices
+                  title={stage.title}
+                  price={stage.price}
+                  benefits={benefits}
+                  contact={contact}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -198,10 +146,12 @@ const CardPrices = ({
   title,
   price,
   benefits,
+  contact,
 }: {
   title: string;
   price: string;
   benefits: string[];
+  contact: any;
 }) => {
   const rows = Array.from({ length: 38 });
 
@@ -252,7 +202,7 @@ const CardPrices = ({
             />
             <div className="relative z-10 text-primary font-black text-lg sm:text-xl md:text-2xl tracking-tight pr-1  w-full text-right flex items-baseline justify-end gap-2">
               <span className="text-[10px] sm:text-xs font-normal lowercase">
-                de la{" "}
+                de la
               </span>
               {price}
             </div>
@@ -270,7 +220,7 @@ const CardPrices = ({
 
         {/* CTA CENTRAT */}
         <a
-          href="tel:+40740344530"
+          href={`tel:+${contact.telefon}`}
           className="block w-full sm:w-fit mx-auto mt-4 bg-primary text-thirdcolor font-black px-6 py-3 rounded-full text-center hover:scale-105 transition-transform text-sm sm:text-base whitespace-nowrap"
         >
           Sună pentru o programare
