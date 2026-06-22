@@ -17,7 +17,7 @@ export default function ProiecteLayout({ children }: { children: ReactNode }) {
 
           <aside
             className={`
-           bg-[#0a0a0a] md:bg-black md:border-r md:border-primary/10
+           bg-[#222222] md:bg-black md:border-r md:border-primary/10
             fixed top-0 left-0 z-10 min-h-screen w-64  
             p-6 space-y-4 overflow-y-auto
             overflow-x-hidden
@@ -30,7 +30,7 @@ export default function ProiecteLayout({ children }: { children: ReactNode }) {
             <CarDropDown />
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden fixed w-auto h-auto top-1/2 -right-9 z-20   flex items-center justify-center transition-colors"
+              className="md:hidden fixed w-auto h-auto top-[80%] -right-9 z-20   flex items-center justify-center transition-colors"
             >
               <span className="text-primary font-bold text-xl whitespace-nowrap transform -rotate-90 origin-center">
                 CATEGORII

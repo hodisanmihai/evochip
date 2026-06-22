@@ -18,6 +18,7 @@ const CarCard = ({ project }: { project: ProjectItem }) => {
     : carModel.car_brands;
   const brandName = brandData?.car_brand || "Unknown";
   const modelName = carModel.car_model || "Unknown";
+  const engine_code = project?.engine_code || "Unknown";
 
   const stageLabel = project.stage?.solution_name ?? "STAGE 1";
   const oldPower = project.initial_power || 0;
@@ -26,8 +27,20 @@ const CarCard = ({ project }: { project: ProjectItem }) => {
   const imageSrc =
     !imgError && project.image_url ? project.image_url : PlaceHolder;
 
+  const slugify = (text: string) =>
+    text
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+
+  const slug = `${slugify(brandName)}-${slugify(modelName)}-${slugify(
+    String(engine_code)
+  )}-${slugify(String(newPower))}-hp-${slugify(stageLabel)}-${
+    project.id
+  }-evochip`;
+
   return (
-    <Link href={`/proiecte/${project.id}`}>
+    <Link href={`/proiecte/${slug}`}>
       <div className="w-[90%] md:max-w-75 gap-4 shrink-0 flex flex-col rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
         <div
           className="w-full overflow-hidden rounded-t-xl border-2 border-primary"
@@ -75,7 +88,7 @@ const CarCard = ({ project }: { project: ProjectItem }) => {
             </div>
 
             <Link
-              href={`/proiecte/${project.id}`}
+              href={`/proiecte/${slug}`}
               className="relative z-1 bg-zinc-200 text-primary font-bold uppercase text-[11px] md:text-[14px] py-1 px-4 md:py-2 md:px-8 rounded-full shadow-md hover:bg-white transition-colors tracking-wider text-center"
             >
               Detalii
@@ -88,3 +101,5 @@ const CarCard = ({ project }: { project: ProjectItem }) => {
 };
 
 export default CarCard;
+{
+}

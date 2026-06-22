@@ -10,7 +10,8 @@ import { ProjectItem } from "../types";
 
 const Page = () => {
   const params = useParams();
-  const id = params.id as string;
+  const slug = params.slug as string;
+  const projectId = slug.split("-").slice(-2)[0];
 
   const [project, setProject] = useState<ProjectItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ const Page = () => {
           )
         `
         )
-        .eq("id", id)
+        .eq("id", projectId)
         .single();
 
       if (error || !data) {
@@ -47,7 +48,7 @@ const Page = () => {
     };
 
     fetchProject();
-  }, [id]);
+  }, [projectId]);
 
   if (loading) return <div className="text-zinc-400 p-8">Se încarcă...</div>;
   if (!project)
@@ -106,7 +107,7 @@ const Page = () => {
                 clipPath: "polygon(0 0, 100% 0, 80% 100%, 0 100%)",
               }}
             />
-            <div className="relative z-10 text-primary font-black text-xl md:text-2xl tracking-tight pl-1 uppercase">
+            <div className="relative z-1 text-primary font-black text-xl md:text-2xl tracking-tight pl-1 uppercase">
               {stageLabel}
             </div>
 
