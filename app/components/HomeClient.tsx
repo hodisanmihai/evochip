@@ -15,11 +15,11 @@ import NavBar from "./NavBar";
 import type {
   PriceProp,
   ContactProp,
+  ProjectProps,
 } from "@/lib/supabase/services/landingTypes";
-import { ProjectItem } from "../proiecte/types";
 
 type HomeClientProps = {
-  projects: ProjectItem[];
+  projects: ProjectProps[];
   prices: PriceProp[];
   contact: ContactProp;
 };

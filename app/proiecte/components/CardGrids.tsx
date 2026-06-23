@@ -1,10 +1,10 @@
 "use client";
 
 import CarCard from "./CarCard";
-import { ProjectItem } from "../types";
+import { ProjectProps } from "@/lib/supabase/services/landingTypes";
 
 interface CardGridsProps {
-  paginatedProjects: ProjectItem[];
+  paginatedProjects: ProjectProps[];
 }
 
 const CardGrids = ({ paginatedProjects }: CardGridsProps) => {

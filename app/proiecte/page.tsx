@@ -7,14 +7,15 @@ import StageSelector from "./components/StageSelector";
 import ActiveFilters from "./components/ActiveFilters";
 import CardGrids from "./components/CardGrids";
 import Pagination from "./components/Pagination";
-import { ProjectItem, CarModelData } from "./types";
+import { CarModelData } from "./types";
+import { ProjectProps } from "@/lib/supabase/services/landingTypes";
 import { useCarFilter } from "./context/CarFilterContext";
 
 const ITEMS_PER_PAGE = 6;
 
 const Page = () => {
   const [page, setPage] = useState(1);
-  const [projects, setProjects] = useState<ProjectItem[]>([]);
+  const [projects, setProjects] = useState<ProjectProps[]>([]); // Schimbat din ProjectItem[]
   const [loading, setLoading] = useState(true);
 
   const {
@@ -83,20 +84,24 @@ const Page = () => {
         dyno_file_url: string;
         video_url: string;
         mods: string[] | string | null;
-        stage: number | null;
+        stage: {
+          id: number;
+          solution_name: string;
+        }[];
         car_models: CarModelData | CarModelData[];
       }
-
       const normalizedData = ((data || []) as unknown as ProjectData[]).map(
         (project) => ({
           ...project,
           car_models: Array.isArray(project.car_models)
             ? project.car_models[0]
             : project.car_models,
+          stage: project.stage,
         })
       );
 
-      setProjects(normalizedData as ProjectItem[]);
+      setProjects(normalizedData);
+
       setLoading(false);
     };
 
@@ -119,7 +124,7 @@ const Page = () => {
       const matchesModel = !selectedModelId || carModel.id === selectedModelId;
 
       const matchesStage =
-        !selectedStage || String(project.stage?.id) === selectedStage;
+        !selectedStage || String(project.stage?.[0]?.id) === selectedStage;
 
       const matchesSearch =
         !searchQuery ||

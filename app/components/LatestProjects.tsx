@@ -4,9 +4,9 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import data from "../data/continut.json";
 
 import CarCard from "../proiecte/components/CarCard";
-import { ProjectItem } from "../proiecte/types";
+import { ProjectProps } from "@/lib/supabase/services/landingTypes";
 type LatestProjectsProp = {
-  projects: ProjectItem[];
+  projects: ProjectProps[];
 };
 import Link from "next/link";
 

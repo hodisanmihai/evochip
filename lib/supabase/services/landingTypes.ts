@@ -10,18 +10,6 @@ export type ContactProp = {
   tiktok_url?: string;
 };
 
-export type ProjectProp = {
-  id: string;
-
-  title: string;
-
-  description?: string;
-
-  image?: string;
-
-  created_at: string;
-};
-
 export type PriceProp = {
   id: string;
   title: string;
@@ -32,3 +20,42 @@ export type PriceProp = {
   text_4?: string;
   text_5?: string;
 };
+
+export type CarBrand = {
+  id: number;
+  car_brand: string;
+};
+
+export type CarModel = {
+  id: number;
+  car_model: string;
+  car_brand: number;
+  car_brands?: CarBrand | CarBrand[];
+};
+
+export type Remap = {
+  id: number | string;
+  solution_name: string;
+};
+
+export type ProjectProps = {
+  id: number;
+  combustion: string;
+  engine_capacity: number | null;
+  engine_code: string;
+  transmition: string;
+  initial_power: number | null;
+  initial_torque: number | null;
+  new_power: number | null;
+  new_torque: number | null;
+  note: string;
+  image_url: string;
+  dyno_file_url: string;
+  video_url: string;
+  mods: string[] | string | null;
+  stage: Remap[] | null;
+  car_models: CarModel;
+};
+
+// Alias pentru consistency
+export type ProjectItem = ProjectProps;

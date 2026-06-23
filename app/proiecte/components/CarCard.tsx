@@ -3,11 +3,11 @@
 import { ArrowRight } from "lucide-react";
 import NextImage from "next/image";
 import PlaceHolder from "../../../public/resources/LOGO-EVOCHIP.png";
-import { ProjectItem } from "../types";
+import { ProjectProps } from "@/lib/supabase/services/landingTypes";
 import { useState } from "react";
 import Link from "next/link";
 
-const CarCard = ({ project }: { project: ProjectItem }) => {
+const CarCard = ({ project }: { project: ProjectProps }) => {
   const [imgError, setImgError] = useState(false);
 
   const carModel = project.car_models;
@@ -18,9 +18,9 @@ const CarCard = ({ project }: { project: ProjectItem }) => {
     : carModel.car_brands;
   const brandName = brandData?.car_brand || "Unknown";
   const modelName = carModel.car_model || "Unknown";
-  const engine_code = project?.engine_code || "Unknown";
+  const engine_code = project.engine_code || "Unknown"; // Adaugat
 
-  const stageLabel = project.stage?.solution_name ?? "STAGE 1";
+  const stageLabel = project.stage?.[0]?.solution_name ?? "STAGE 1";
   const oldPower = project.initial_power || 0;
   const newPower = project.new_power || 0;
 
