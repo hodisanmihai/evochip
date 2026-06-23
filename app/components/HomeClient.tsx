@@ -14,12 +14,12 @@ import Footer from "./Footer";
 import NavBar from "./NavBar";
 import type {
   PriceProp,
-  ProjectProp,
   ContactProp,
 } from "@/lib/supabase/services/landingTypes";
+import { ProjectItem } from "../proiecte/types";
 
 type HomeClientProps = {
-  projects: ProjectProp[];
+  projects: ProjectItem[];
   prices: PriceProp[];
   contact: ContactProp;
 };
@@ -52,7 +52,7 @@ export default function HomeClient({
       {showHero && <ShowCase />}
       {showHero && <ServicesShowCase />}
 
-      {showHero && <LatestProjects />}
+      {showHero && <LatestProjects projects={projects} />}
       {showHero && <NavBar contact={contact} />}
       {showHero && <Prices prices={prices} contact={contact} />}
       {showHero && <Contact contact={contact} />}

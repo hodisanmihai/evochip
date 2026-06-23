@@ -41,7 +41,7 @@ const CarCard = ({ project }: { project: ProjectItem }) => {
 
   return (
     <Link href={`/proiecte/${slug}`}>
-      <div className="w-[90%] md:max-w-75 gap-4 shrink-0 flex flex-col rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
+      <div className="w-full md:max-w-75 gap-4 shrink-0 flex flex-col  rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
         <div
           className="w-full overflow-hidden rounded-t-xl border-2 border-primary"
           style={{ aspectRatio: "16/10" }}

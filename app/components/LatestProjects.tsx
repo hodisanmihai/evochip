@@ -2,9 +2,13 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import data from "../data/continut.json";
-import NextImage from "next/image";
-import PlaceHolder from "../../public/resources/maxresdefault.jpg";
-import { ArrowRight } from "lucide-react";
+
+import CarCard from "../proiecte/components/CarCard";
+import { ProjectItem } from "../proiecte/types";
+type LatestProjectsProp = {
+  projects: ProjectItem[];
+};
+import Link from "next/link";
 
 const CARD_WIDTH = 340;
 const CARD_GAP = 24;
@@ -12,15 +16,15 @@ const CONTAINER_PADDING_DESKTOP = 64;
 const CONTAINER_PADDING_MOBILE = 32;
 const AUTOPLAY_DELAY = 10000;
 
-const projects = Array(13).fill(null);
-
-const LatestProjects = () => {
+const LatestProjects = ({ projects }: LatestProjectsProp) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [cardsPerPage, setCardsPerPage] = useState(4);
   const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
+
+  const projectsShowcase = projects;
 
   const updateCardsPerPage = useCallback(() => {
     if (!containerRef.current) return;
@@ -35,7 +39,7 @@ const LatestProjects = () => {
       ? 2
       : Math.max(
           1,
-          Math.floor((containerWidth + CARD_GAP) / (CARD_WIDTH + CARD_GAP)),
+          Math.floor((containerWidth + CARD_GAP) / (CARD_WIDTH + CARD_GAP))
         );
 
     setCardsPerPage((prev) => {
@@ -51,7 +55,7 @@ const LatestProjects = () => {
     return () => observer.disconnect();
   }, [updateCardsPerPage]);
 
-  const totalPages = Math.ceil(projects.length / cardsPerPage);
+  const totalPages = Math.ceil(projectsShowcase.length / cardsPerPage);
 
   const goToPage = useCallback(
     (page: number) => {
@@ -61,7 +65,7 @@ const LatestProjects = () => {
         setCurrentPage((prev) => (prev + 1) % totalPages);
       }, AUTOPLAY_DELAY);
     },
-    [totalPages],
+    [totalPages]
   );
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
@@ -105,11 +109,11 @@ const LatestProjects = () => {
   }, [totalPages]);
 
   const start = currentPage * cardsPerPage;
-  const visibleProjects = projects.slice(start, start + cardsPerPage);
+  const visibleProjects = projectsShowcase.slice(start, start + cardsPerPage);
 
   return (
     <div
-      className="w-full md:min-h-auto min-h-screen flex flex-col items-center justify-start md:py-20 px-4 md:px-8 bg-black/50 md:bg-black/0 overflow-hidden z-2 "
+      className="w-full md:min-h-auto min-h-screen flex flex-col items-center justify-start py-20 px-4 md:px-8 bg-black/50 md:bg-black/0 overflow-hidden z-2 "
       id="latest-projects"
     >
       <div className=" w-full h-full flex flex-col items-center justify-start gap-8 md:gap-12">
@@ -132,10 +136,11 @@ const LatestProjects = () => {
         >
           <div className="p-4 md:p-8 flex  flex-col h-full  md:flex-col items-center gap-4 md:gap-6 text-white">
             {/* Grid carduri — 2 coloane pe mobil, flex pe desktop */}
-            <div className="w-full overflow-visible h-full">
-              <div className="grid md:grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-6 md:justify-center">
-                {visibleProjects.map((_, i) => (
-                  <LatestCard key={start + i} />
+            <div className="w-full overflow-visible h-full flex justify-center md:justify-center-safe">
+              <div className="w-[90%] grid md:grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-6 md:justify-center md:items-center">
+                {" "}
+                {visibleProjects.map((projectItem, i: number) => (
+                  <CarCard key={start + i} project={projectItem} />
                 ))}
               </div>
             </div>
@@ -161,6 +166,12 @@ const LatestProjects = () => {
                 ))}
               </div>
             )}
+            <Link
+              href="/proiecte"
+              className=" w-full inline-flex items-center justify-center rounded-full border border-primary bg-thirdcolor py-4  text-center font-semibold text-primary shadow-lg shadow-black/50 transition duration-300 hover:scale-[1.01] md:px-16 md:py-4"
+            >
+              Vezi toate proiectele
+            </Link>
           </div>
         </div>
       </div>
@@ -169,57 +180,3 @@ const LatestProjects = () => {
 };
 
 export default LatestProjects;
-
-const LatestCard = () => {
-  return (
-    <div className="w-full md:w-full md:max-w-85 gap-4 shrink-0 flex flex-col rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
-      <div className="w-full aspect-16/10 overflow-hidden rounded-t-xl border-2 border-primary">
-        <NextImage
-          src={PlaceHolder}
-          alt="Project Image"
-          width={340}
-          height={210}
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      <div className="flex flex-col text-white font-black tracking-wide bg-primary">
-        <div className="flex items-center justify-between text-lg md:text-2xl uppercase p-3 md:p-4 pb-2">
-          <h3 className="text-zinc-300 font-extrabold tracking-tighter">
-            GOLF IV
-          </h3>
-          <div className="flex items-center gap-1 font-bold text-base md:text-xl">
-            <span className="text-zinc-300">140</span>
-            <ArrowRight
-              size={18}
-              strokeWidth={3}
-              color="#05DF72"
-              className="md:w-6 md:h-6"
-            />
-            <span className="text-green-400">180</span>
-          </div>
-        </div>
-
-        <div className="relative border-t-2 border-zinc-200/90 flex items-center justify-between p-2 px-3 m-2">
-          <div
-            className="absolute left-0 top-0 bottom-0 bg-thirdcolor"
-            style={{
-              width: "45%",
-              clipPath: "polygon(0 0, 100% 0, 80% 100%, 0 100%)",
-            }}
-          />
-          <div className="relative z-10 text-primary font-black text-xs md:text-sm tracking-tight pl-1 uppercase text-center">
-            STAGE I
-          </div>
-
-          <a
-            href="#"
-            className="relative z-10 bg-zinc-200 text-primary font-bold uppercase text-[11px] md:text-[14px] py-1 px-4 md:py-2 md:px-8 rounded-full shadow-md hover:bg-white transition-colors tracking-wider text-center"
-          >
-            Detalii
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-};

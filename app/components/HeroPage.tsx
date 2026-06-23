@@ -16,19 +16,19 @@ const HeroPage = () => {
       tl.fromTo(
         ".animate-title",
         { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, delay: 2 },
+        { opacity: 1, y: 0, delay: 2 }
       )
         .fromTo(
           ".animate-subtitle",
           { opacity: 0, y: 20 },
           { opacity: 1, y: 0 },
-          "-=0.6",
+          "-=0.6"
         )
         .fromTo(
           ".animate-btn",
           { opacity: 0, scale: 0.95 },
           { opacity: 1, scale: 1, duration: 0.2 },
-          "-=1",
+          "-=1"
         );
     }, containerRef);
 
@@ -64,7 +64,7 @@ const HeroPage = () => {
 
           <a
             href="#showcase1"
-            className="animate-btn opacity-0 inline-flex items-center justify-center rounded-full border border-primary bg-secondary py-4  text-center font-semibold text-primary shadow-lg shadow-black/50 transition duration-300 hover:scale-[1.01] md:px-16 md:py-4"
+            className="animate-btn opacity-0 inline-flex items-center justify-center rounded-full border border-primary bg-thirdcolor py-4  text-center font-semibold text-primary shadow-lg shadow-black/50 transition duration-300 hover:scale-[1.01] md:px-16 md:py-4"
           >
             Află mai multe
           </a>

@@ -9,8 +9,8 @@ interface CardGridsProps {
 
 const CardGrids = ({ paginatedProjects }: CardGridsProps) => {
   return (
-    <div>
-      <div className="grid justify-items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="w-[90%]">
+      <div className=" grid justify-items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {paginatedProjects.length > 0 ? (
           paginatedProjects.map((project) => (
             <CarCard key={project.id} project={project} />
