@@ -165,23 +165,29 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
   const { viewport } = useThree();
   const grupMasinaRef = useRef<Group | null>(null);
 
-  // Keep render state in sync with animation progress without reading ref during render.
+  // Animation state
   const isCarAnimating = useRef(false);
   const [isCarAnimatingState, setIsCarAnimatingState] = useState(false);
 
-  const isMobile = viewport.width < 10;
-
+  // Constants
   const MOBIL_SCALE = 1.1;
   const MOBIL_X = 10;
   const MOBIL_Y = 0;
   const MOBIL_Z = -10.5;
   const MOBIL_ROTATION = -0.7;
 
-  const currentScale = isMobile ? MOBIL_SCALE : CAR_SCALE;
-  const currentVerticalOffset = isMobile ? MOBIL_Y : CAR_VERTICAL_OFFSET;
+  // ✅ Calculează isMobile și config cu useMemo (NU state!)
+  const isMobile = useMemo(() => viewport.width < 10, [viewport.width]);
 
-  const pozitieDreaptaViewport = viewport.width * (1.1 - VISIBLE_CAR_RATIO);
+  const config = useMemo(() => {
+    return {
+      currentScale: isMobile ? MOBIL_SCALE : CAR_SCALE,
+      currentVerticalOffset: isMobile ? MOBIL_Y : CAR_VERTICAL_OFFSET,
+      pozitieDreaptaViewport: viewport.width * (1.1 - VISIBLE_CAR_RATIO),
+    };
+  }, [isMobile, viewport.width]);
 
+  // ✅ Setup animație mașinii - effect se declanșează doar pe viewport schimbare
   useEffect(() => {
     if (!grupMasinaRef.current) return;
 
@@ -210,16 +216,16 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
       });
     } else {
       gsap.set(grupMasinaRef.current.position, {
-        x: pozitieDreaptaViewport * 4,
-        y: currentVerticalOffset,
-        z: -pozitieDreaptaViewport,
+        x: config.pozitieDreaptaViewport * 4,
+        y: config.currentVerticalOffset,
+        z: -config.pozitieDreaptaViewport,
       });
     }
 
     const tween = gsap.to(grupMasinaRef.current.position, {
-      x: isMobile ? MOBIL_X : pozitieDreaptaViewport + 2,
-      y: isMobile ? MOBIL_Y - 2 : currentVerticalOffset,
-      z: isMobile ? MOBIL_Z : -pozitieDreaptaViewport,
+      x: isMobile ? MOBIL_X : config.pozitieDreaptaViewport + 2,
+      y: isMobile ? MOBIL_Y - 2 : config.currentVerticalOffset,
+      z: isMobile ? MOBIL_Z : -config.pozitieDreaptaViewport,
       duration: isMobile ? 2.2 : 2,
       ease: isMobile ? "power3.out" : "power4.out",
 
@@ -232,26 +238,20 @@ function ContenitorMasina({ isVisible }: { isVisible: boolean }) {
       mounted = false;
       tween.kill();
     };
-  }, [
-    isVisible,
-    isMobile,
-    currentVerticalOffset,
-    pozitieDreaptaViewport,
-    MOBIL_Z,
-  ]);
+  }, [isVisible, isMobile, config, MOBIL_Z]);
 
   return (
     <group
       ref={grupMasinaRef}
       position={[
         isMobile ? MOBIL_X : 16,
-        currentVerticalOffset - 2,
-        isMobile ? MOBIL_Z : -pozitieDreaptaViewport,
+        config.currentVerticalOffset - 2,
+        isMobile ? MOBIL_Z : -config.pozitieDreaptaViewport,
       ]}
     >
       <group>
         <CarModel
-          scale={currentScale}
+          scale={config.currentScale}
           isSpinning={isMobile ? false : isCarAnimatingState}
           rotationY={isMobile ? MOBIL_ROTATION : CAR_INITIAL_ROTATION[1]}
         />
