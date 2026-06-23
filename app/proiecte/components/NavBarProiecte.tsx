@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {
   FaBars,
   FaTimes,
@@ -12,18 +11,35 @@ import {
   FaFacebookMessenger,
 } from "react-icons/fa";
 import gsap from "gsap";
-import evoChipLogo from "../../public/resources/LOGO-EVOCHIP.png";
-import { ContactProp } from "@/lib/supabase/services/landingTypes";
+import evoChipLogo from "../../../public/resources/LOGO-EVOCHIP.png";
+import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
-type NavbarProps = {
-  contact: ContactProp;
+type Contact = {
+  facebook_url?: string;
+  instagram_url?: string;
+  tiktok_url?: string;
 };
 
-const NavBar = ({ contact }: NavbarProps) => {
+const NavBarProiecte = () => {
+  const [contact, setContact] = useState<Contact | null>(null);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const linksRef = useRef<HTMLAnchorElement[]>([]);
+
+  useEffect(() => {
+    const fetchContact = async () => {
+      const supabase = createClient();
+
+      const { data } = await supabase.from("contact").select("*").single();
+
+      setContact(data);
+    };
+
+    fetchContact();
+  }, []);
 
   const getMessengerLink = (facebookUrl?: string) => {
     if (!facebookUrl) return "#";
@@ -37,27 +53,27 @@ const NavBar = ({ contact }: NavbarProps) => {
   };
 
   const links = [
-    { label: "Acasă", href: "#" },
-    { label: "Servicii", href: "#showcase4" },
-    { label: "Proiecte", href: "/proiecte" },
-    { label: "Preturi", href: "#prices" },
+    { label: "Acasă", href: "../" },
+    { label: "Servicii", href: "../#showcase4" },
+    { label: "Proiecte", href: "../proiecte" },
+    { label: "Preturi", href: "../#prices" },
     { label: "Contact", href: "#contact" },
   ];
 
   const social = [
     {
-      id: contact.facebook_url || "fb",
-      href: contact.facebook_url,
+      id: contact?.facebook_url || "#",
+      href: contact?.facebook_url,
       icon: <FaFacebook className="w-4 h-4" />,
     },
     {
-      id: contact.instagram_url || "insta",
-      href: contact.instagram_url,
+      id: contact?.instagram_url || "#",
+      href: contact?.instagram_url,
       icon: <FaInstagram className="w-4 h-4" />,
     },
     {
-      id: contact.tiktok_url || "tiktok",
-      href: contact.tiktok_url,
+      id: contact?.tiktok_url || "#",
+      href: contact?.tiktok_url,
       icon: <FaTiktok className="w-4 h-4" />,
     },
     {
@@ -150,17 +166,18 @@ const NavBar = ({ contact }: NavbarProps) => {
         >
           <div className="mx-auto max-w-6xl" ref={menuRef}>
             <nav className="flex flex-col gap-6 text-white text-3xl text-center">
-              {links.map((link) =>
-                link.href.startsWith("#") ? (
-                  <a key={link.label} href={link.href}>
-                    {link.label}
-                  </a>
-                ) : (
-                  <Link key={link.label} href={link.href}>
-                    {link.label}
-                  </Link>
-                )
-              )}
+              {links.map((link, index) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  ref={(el) => {
+                    if (el) linksRef.current[index] = el;
+                  }}
+                  className="hover:text-red-400 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
 
               <div className="mt-8 flex items-center justify-center gap-4">
                 {social.map((s) => (
@@ -183,4 +200,4 @@ const NavBar = ({ contact }: NavbarProps) => {
   );
 };
 
-export default NavBar;
+export default NavBarProiecte;

@@ -2,10 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { PriceProp, ContactProp } from "@/lib/supabase/services/landingTypes";
 
 type PricesProps = {
-  prices: any[];
-  contact: any;
+  prices: PriceProp[];
+  contact: ContactProp;
 };
 
 const Prices = ({ prices, contact }: PricesProps) => {
@@ -94,6 +95,7 @@ const Prices = ({ prices, contact }: PricesProps) => {
 
   return (
     <div
+      id="prices"
       ref={sectionRef}
       className="w-full min-h-screen py-12 flex items-center justify-start p-4 sm:p-8 md:p-20 bg-primary z-2"
     >
@@ -118,7 +120,7 @@ const Prices = ({ prices, contact }: PricesProps) => {
               stage.text_3,
               stage.text_4,
               stage.text_5,
-            ].filter(Boolean);
+            ].filter((b): b is string => Boolean(b));
 
             return (
               <div
@@ -151,7 +153,7 @@ const CardPrices = ({
   title: string;
   price: string;
   benefits: string[];
-  contact: any;
+  contact: ContactProp;
 }) => {
   const rows = Array.from({ length: 38 });
 

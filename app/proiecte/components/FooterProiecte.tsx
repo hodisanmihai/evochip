@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useEffect, useState } from "react";
 import { FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 import {
   FaTiktok,
@@ -8,14 +8,32 @@ import {
   FaFacebook,
   FaFacebookMessenger,
 } from "react-icons/fa";
-import { ContactProp } from "@/lib/supabase/services/landingTypes";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
-type FooterProps = {
-  contact: ContactProp;
+type Contact = {
+  email?: string;
+  telefon?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  tiktok_url?: string;
 };
 
-const Footer = ({ contact }: FooterProps) => {
+const FooterProiecte = () => {
+  const [contact, setContact] = useState<Contact | null>(null);
+
+  useEffect(() => {
+    const fetchContact = async () => {
+      const supabase = createClient();
+
+      const { data } = await supabase.from("contact").select("*").single();
+
+      setContact(data);
+    };
+
+    fetchContact();
+  }, []);
+
   const getMessengerLink = (facebookUrl?: string) => {
     if (!facebookUrl) return "#";
 
@@ -28,20 +46,20 @@ const Footer = ({ contact }: FooterProps) => {
   };
   const currentYear = new Date().getFullYear();
 
-  const phone = `+${contact.telefon}`;
-  const email = contact.email;
+  const phone = `+${contact?.telefon}`;
+  const email = contact?.email;
   const address = "Oradea, Romania";
 
-  const instagram = contact.instagram_url;
-  const facebook = contact.facebook_url;
-  const tiktok = contact.tiktok_url;
+  const instagram = contact?.instagram_url;
+  const facebook = contact?.facebook_url;
+  const tiktok = contact?.tiktok_url;
   const messenger = getMessengerLink(contact?.facebook_url);
 
   const links = [
-    { label: "Acasă", href: "#" },
-    { label: "Servicii", href: "#showcase4" },
-    { label: "Proiecte", href: "/proiecte" },
-    { label: "Preturi", href: "#prices" },
+    { label: "Acasă", href: "../" },
+    { label: "Servicii", href: "../#showcase4" },
+    { label: "Proiecte", href: "../proiecte" },
+    { label: "Preturi", href: "../#prices" },
     { label: "Contact", href: "#contact" },
   ];
 
@@ -71,17 +89,15 @@ const Footer = ({ contact }: FooterProps) => {
           <div className="flex flex-col gap-4">
             <h4 className="text-lg font-bold text-white">Links Rapide</h4>
             <nav className="flex flex-col gap-2">
-              {links.map((link) =>
-                link.href.startsWith("#") ? (
-                  <a key={link.label} href={link.href}>
-                    {link.label}
-                  </a>
-                ) : (
-                  <Link key={link.label} href={link.href}>
-                    {link.label}
-                  </Link>
-                )
-              )}
+              {links.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="text-zinc-400 hover:text-red-400 transition-colors text-sm"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </nav>
           </div>
 
@@ -178,4 +194,4 @@ const Footer = ({ contact }: FooterProps) => {
   );
 };
 
-export default Footer;
+export default FooterProiecte;

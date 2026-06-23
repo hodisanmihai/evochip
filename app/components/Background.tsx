@@ -65,10 +65,10 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
         dpr={isMobileDevice ? [1, 1.2] : [1, 1.5]}
         gl={{ powerPreference: "high-performance" }}
       >
-        <ambientLight intensity={1} />
+        <ambientLight intensity={5} />
         <directionalLight
           position={[0, 2, 2]}
-          intensity={isMobileDevice ? 5 : 2.5}
+          intensity={isMobileDevice ? 10 : 5}
         />
 
         <PerspectiveCamera makeDefault fov={45} />

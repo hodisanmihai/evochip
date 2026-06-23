@@ -1,9 +1,9 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import NavBar from "../components/NavBar";
+import NavBarProiecte from "./components/NavBarProiecte";
 import CarDropDown from "./components/CarDropDown";
-import Footer from "../components/Footer";
+import FooterProiecte from "./components/FooterProiecte";
 import { CarFilterProvider } from "./context/CarFilterContext";
 
 export default function ProiecteLayout({ children }: { children: ReactNode }) {
@@ -13,7 +13,7 @@ export default function ProiecteLayout({ children }: { children: ReactNode }) {
     <CarFilterProvider>
       <div className="min-h-full overscroll-x-none overflow-x-hidden">
         <div className="min-block-h-screen  text-white flex flex-col md:flex-row  ">
-          <NavBar />
+          <NavBarProiecte />
 
           <aside
             className={`
@@ -42,7 +42,7 @@ export default function ProiecteLayout({ children }: { children: ReactNode }) {
             {children}
           </main>
         </div>
-        <Footer />
+        <FooterProiecte />
       </div>
     </CarFilterProvider>
   );

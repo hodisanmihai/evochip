@@ -12,11 +12,16 @@ import Prices from "./Prices";
 import Contact from "./Contact";
 import Footer from "./Footer";
 import NavBar from "./NavBar";
+import type {
+  PriceProp,
+  ProjectProp,
+  ContactProp,
+} from "@/lib/supabase/services/landingTypes";
 
 type HomeClientProps = {
-  projects: any[];
-  prices: any[];
-  contact: any;
+  projects: ProjectProp[];
+  prices: PriceProp[];
+  contact: ContactProp;
 };
 
 export default function HomeClient({

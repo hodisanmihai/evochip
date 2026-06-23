@@ -9,9 +9,10 @@ import {
   FaFacebookMessenger,
   FaWhatsapp,
 } from "react-icons/fa";
+import { ContactProp } from "@/lib/supabase/services/landingTypes";
 
 type ContactProps = {
-  contact: any;
+  contact: ContactProp;
 };
 
 const Contact = ({ contact }: ContactProps) => {
@@ -86,8 +87,8 @@ const Contact = ({ contact }: ContactProps) => {
           <a
             key={c.id}
             href={c.href}
-            target={c.href.startsWith("http") ? "_blank" : undefined}
-            rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
+            target={c.href}
+            rel={c.href}
             className="block group"
           >
             <div
