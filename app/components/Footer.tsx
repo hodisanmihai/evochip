@@ -70,14 +70,22 @@ const Footer = ({ contact }: FooterProps) => {
           {/* Quick Links */}
           <div className="flex flex-col gap-4">
             <h4 className="text-lg font-bold text-white">Links Rapide</h4>
-            <nav className="flex flex-col gap-2">
+            <nav className="flex flex-col gap-2 text-sm text-zinc-400">
               {links.map((link) =>
                 link.href.startsWith("#") ? (
-                  <a key={link.label} href={link.href}>
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className="hover:text-red-400 transition-colors"
+                  >
                     {link.label}
                   </a>
                 ) : (
-                  <Link key={link.label} href={link.href}>
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className="hover:text-red-400 transition-colors"
+                  >
                     {link.label}
                   </Link>
                 )
