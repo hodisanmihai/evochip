@@ -59,24 +59,25 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] max-w-125opacity-60 md:opacity-30 select-none">
         <Image src={LogoEVOCHIP} alt="EVOCHIP Logo" priority />
       </div>
+      {!isMobileDevice ? (
+        <Canvas
+          className="w-full h-full"
+          dpr={isMobileDevice ? [1, 1.2] : [1, 1.5]}
+          gl={{ powerPreference: "high-performance" }}
+        >
+          <ambientLight intensity={5} />
+          <directionalLight
+            position={[0, 2, 2]}
+            intensity={isMobileDevice ? 10 : 5}
+          />
 
-      <Canvas
-        className="w-full h-full"
-        dpr={isMobileDevice ? [1, 1.2] : [1, 1.5]}
-        gl={{ powerPreference: "high-performance" }}
-      >
-        <ambientLight intensity={5} />
-        <directionalLight
-          position={[0, 2, 2]}
-          intensity={isMobileDevice ? 10 : 5}
-        />
+          <PerspectiveCamera makeDefault fov={45} />
 
-        <PerspectiveCamera makeDefault fov={45} />
+          <CameraScrollController isMobile={isMobileDevice} />
 
-        <CameraScrollController isMobile={isMobileDevice} />
-
-        <ContenitorMasina isVisible={isVisible} />
-      </Canvas>
+          <ContenitorMasina isVisible={isVisible} />
+        </Canvas>
+      ) : null}
     </div>
   );
 };
