@@ -140,7 +140,6 @@ const LatestProjects = ({ projects }: LatestProjectsProp) => {
               <div className="w-[90%] grid md:grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-6 md:justify-center md:items-center">
                 {visibleProjects.map((projectItem, i) => (
                   <div key={i}>
-                    {projectItem.car_models ? "HAS MODEL" : "NO MODEL"}
                     <CarCard project={projectItem} />
                   </div>
                 ))}
