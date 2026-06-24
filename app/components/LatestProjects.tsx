@@ -138,9 +138,11 @@ const LatestProjects = ({ projects }: LatestProjectsProp) => {
             {/* Grid carduri — 2 coloane pe mobil, flex pe desktop */}
             <div className="w-full overflow-visible h-full flex justify-center md:justify-center-safe">
               <div className="w-[90%] grid md:grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-6 md:justify-center md:items-center">
-                {" "}
-                {visibleProjects.map((projectItem, i: number) => (
-                  <CarCard key={start + i} project={projectItem} />
+                {visibleProjects.map((projectItem, i) => (
+                  <div key={i}>
+                    {projectItem.car_models ? "HAS MODEL" : "NO MODEL"}
+                    <CarCard project={projectItem} />
+                  </div>
                 ))}
               </div>
             </div>
