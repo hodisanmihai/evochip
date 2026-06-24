@@ -176,13 +176,13 @@ const Page = () => {
             <p className="text-xl uppercase text-secondary">Observatii</p>
             <p className="mt-2 text-sm md:text-base">{note}</p>
           </div>
-          <div className="flex gap-3 mt-auto">
+          <div className="flex gap-3 mt-auto ">
             {dynoFile && (
               <a
                 href={dynoFile}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-2 bg-zinc-200 hover:bg-white text-primary text-sm font-bold uppercase tracking-wider py-3 px-4 rounded-full transition"
+                className=" hidden flex-1  items-center justify-center gap-2 bg-zinc-200 hover:bg-white text-primary text-sm font-bold uppercase tracking-wider py-3 px-4 rounded-full transition"
               >
                 <FileText size={16} />
                 Fișă Dyno
