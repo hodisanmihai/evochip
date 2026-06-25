@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getLandingData } from "@/lib/supabase/services/landing";
 import HomeClient from "./components/HomeClient";
 
