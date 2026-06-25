@@ -206,7 +206,7 @@ const CardPrices = ({
               <span className="text-[10px] sm:text-xs font-normal lowercase">
                 de la
               </span>
-              {price}
+              {price} RON
             </div>
           </div>
 

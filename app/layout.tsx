@@ -9,7 +9,6 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
 });
 
-// Optimizare SEO avansată pentru EVOCHIP Oradea
 export const metadata: Metadata = {
   title: {
     default: "EvoChip | Resoftări Auto Profesionale & Chiptuning Oradea",
@@ -31,11 +30,10 @@ export const metadata: Metadata = {
     "EvoChip",
   ],
   authors: [{ name: "EvoChip" }],
-  metadataBase: new URL("https://evochip.ro"), // Înlocuiește cu domeniul tău real când îl cumperi
+  metadataBase: new URL("https://evochip.ro"),
   alternates: {
     canonical: "/",
   },
-  // Afișare profi când distribui link-ul pe WhatsApp, Facebook sau Instagram
   openGraph: {
     title: "EvoChip | Resoftări Auto Profesionale & Chiptuning Oradea",
     description:
@@ -53,12 +51,12 @@ export const metadata: Metadata = {
       },
     ],
   },
-  // Configurare iconițe (Tab Browser)
+
   icons: {
     icon: evoChipLogo.src,
     apple: evoChipLogo.src,
   },
-  // Instrucțiuni pentru roboții de căutare Google
+
   robots: {
     index: true,
     follow: true,
