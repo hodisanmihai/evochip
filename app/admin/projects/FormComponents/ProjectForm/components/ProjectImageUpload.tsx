@@ -1,5 +1,6 @@
 "use client";
 
+import { setProjectCover } from "@/lib/projects/gallery";
 import { validateUpload } from "@/lib/data/validation";
 
 import { useEffect, useRef, useState } from "react";
@@ -55,176 +56,142 @@ const getCroppedImageFile = async (
   return new File([blob], `${cleanName}.jpg`, { type: "image/jpeg" });
 };
 
-const ProjectImageUpload = ({
-  value,
-  onChange,
-  onUploaded,
-  onBusyChange,
-  onPendingChange,
-}: {
-  value: string;
-  onChange: (url: string) => void;
+type PendingImage = { id: string; file: File; url: string };
+
+const ProjectImageUpload = ({ value, onChange, onUploaded, onBusyChange, onPendingChange }: {
+  value: string[];
+  onChange: (urls: string[]) => void;
   onUploaded: (url: string) => void;
   onBusyChange: (busy: boolean) => void;
   onPendingChange: (pending: boolean) => void;
 }) => {
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [fileName, setFileName] = useState("project-image.jpg");
+  const [queue, setQueue] = useState<PendingImage[]>([]);
+  const queueRef = useRef<PendingImage[]>([]);
+  const objectUrls = useRef(new Set<string>());
+  const valueRef = useRef(value);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [uploading, setUploading] = useState(false);
+  const uploadInFlight = useRef(false);
   const [error, setError] = useState<string | null>(null);
-  const readerRef = useRef<FileReader | null>(null);
-  useEffect(() => () => { readerRef.current?.abort(); }, []);
+  const current = queue[0];
 
-  const handleSelectImage = (file?: File) => {
+  useEffect(() => { valueRef.current = value; }, [value]);
+  useEffect(() => {
+    const urls = objectUrls.current;
+    return () => { urls.forEach((url) => URL.revokeObjectURL(url)); urls.clear(); };
+  }, []);
+
+  const updateQueue = (next: PendingImage[]) => {
+    const changed = queueRef.current[0]?.id !== next[0]?.id;
+    queueRef.current = next;
+    setQueue(next);
+    onPendingChange(next.length > 0);
+    if (changed) {
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedAreaPixels(null);
+    }
+  };
+
+  const discardCurrent = () => {
+    const pending = queueRef.current[0];
+    if (pending) { URL.revokeObjectURL(pending.url); objectUrls.current.delete(pending.url); }
+    updateQueue(queueRef.current.slice(1));
     setError(null);
-    if (!file) return;
-    const validationError = validateUpload(file, "image");
-    if (validationError) { setError(validationError); return; }
+  };
 
-    readerRef.current?.abort();
-    onPendingChange(true);
-    setFileName(file.name);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-
-    const reader = new FileReader();
-    readerRef.current = reader;
-    reader.addEventListener("load", () => {
-      if (typeof reader.result === "string") {
-        setImageSrc(reader.result);
-      }
-    });
-    reader.addEventListener("error", () => {
-      setError("Imaginea nu a putut fi citită.");
-      onPendingChange(false);
-    });
-    reader.readAsDataURL(file);
+  const selectFiles = (files: File[]) => {
+    if (uploadInFlight.current || !files.length) return;
+    const errors: string[] = [];
+    const next: PendingImage[] = [];
+    for (const file of files) {
+      const validationError = validateUpload(file, "image");
+      if (validationError) { errors.push(`${file.name}: ${validationError}`); continue; }
+      const url = URL.createObjectURL(file);
+      objectUrls.current.add(url);
+      next.push({ id: crypto.randomUUID(), file, url });
+    }
+    setError(errors.length ? errors.join(" ") : null);
+    if (next.length) updateQueue([...queueRef.current, ...next]);
   };
 
   const handleUpload = async () => {
-    if (!imageSrc || !croppedAreaPixels) return;
-
+    const pending = queueRef.current[0];
+    if (!pending || !croppedAreaPixels || uploadInFlight.current) return;
+    uploadInFlight.current = true;
     setUploading(true);
     onBusyChange(true);
     setError(null);
     try {
-      const croppedFile = await getCroppedImageFile(
-        imageSrc,
-        croppedAreaPixels,
-        fileName
-      );
-
-      const publicUrl = await uploadProjectFile(
-        PROJECT_IMAGE_FOLDER,
-        croppedFile
-      );
+      const file = await getCroppedImageFile(pending.url, croppedAreaPixels, pending.file.name);
+      const publicUrl = await uploadProjectFile(PROJECT_IMAGE_FOLDER, file);
       onUploaded(publicUrl);
-      onChange(publicUrl);
-      setImageSrc(null);
-      onPendingChange(false);
-    } catch (err: unknown) {
-      const message =
-        err && typeof err === "object" && "message" in err
-          ? (err as { message?: string }).message
-          : String(err);
-      setError(message || "Eroare necunoscuta.");
+      const images = [...valueRef.current, publicUrl];
+      valueRef.current = images;
+      onChange(images);
+      discardCurrent();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Imaginea nu a putut fi încărcată. Încearcă din nou.");
     } finally {
+      uploadInFlight.current = false;
       setUploading(false);
       onBusyChange(false);
     }
   };
 
-  const handleDeleteImage = () => onChange("");
+  const changeImages = (images: string[]) => {
+    valueRef.current = images;
+    onChange(images);
+  };
 
   return (
-    <div className="flex flex-col gap-2">
-      <label className={labelClass}>Imagine proiect</label>
+    <div className="flex flex-col gap-3">
+      <label className={labelClass}>Imagini proiect</label>
+      <p className="text-xs text-zinc-400">Selectează mai multe poze și decupează-le pe rând. Imaginea principală apare prima în galerie și pe cardul proiectului.</p>
+      <input type="file" multiple accept="image/jpeg,image/png,image/webp" disabled={uploading}
+        onChange={(event) => { selectFiles(Array.from(event.target.files ?? [])); event.target.value = ""; }} className={inputClass} />
 
-      {value && !imageSrc && (
-        <div className="w-full aspect-16/10 overflow-hidden rounded-t-xl border-2 border-primary bg-[#222222]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={value}
-            alt="Imagine proiect"
-            className="w-full h-full object-cover"
-            width={340}
-            height={210}
-          />
-        </div>
-      )}
-
-      <input
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        disabled={uploading}
-        onChange={(e) => handleSelectImage(e.target.files?.[0])}
-        className={inputClass}
-      />
-
-      {imageSrc && (
+      {current && (
         <div className="flex flex-col gap-3 rounded-md border border-zinc-800 bg-[#171717] p-3">
+          <p className="text-xs text-zinc-300 truncate">{current.file.name} · {queue.length} {queue.length === 1 ? "poză de pregătit" : "poze de pregătit"}</p>
           <div className="relative h-64 overflow-hidden rounded-md bg-black">
-            <Cropper
-              image={imageSrc}
-              crop={crop}
-              zoom={zoom}
-              aspect={16 / 9}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={(_, croppedPixels) =>
-                setCroppedAreaPixels(croppedPixels)
-              }
-            />
+            <Cropper key={current.id} image={current.url} crop={crop} zoom={zoom} aspect={16 / 9}
+              onCropChange={(position) => { setCroppedAreaPixels(null); setCrop(position); }}
+              onZoomChange={(nextZoom) => { setCroppedAreaPixels(null); setZoom(nextZoom); }}
+              onCropComplete={(_, pixels) => { if (queueRef.current[0]?.id === current.id) setCroppedAreaPixels(pixels); }} />
           </div>
-          <div>
-            <label className={labelClass}>Zoom</label>
-            <input
-              type="range"
-              min={1}
-              max={3}
-              step={0.1}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full accent-red-600"
-            />
-          </div>
+          <label className={labelClass}>Zoom
+            <input type="range" min={1} max={3} step={0.1} value={zoom} disabled={uploading}
+              onChange={(event) => { setCroppedAreaPixels(null); setZoom(Number(event.target.value)); }} className="w-full accent-red-600" />
+          </label>
           <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={handleUpload}
-              disabled={uploading || !croppedAreaPixels}
-              className="bg-primary py-2 rounded-md text-sm font-bold text-white transition hover:bg-red-600 disabled:opacity-50"
-            >
-              {uploading ? "Se incarca..." : "Incarca imaginea"}
-            </button>
-            <button
-              type="button"
-              onClick={() => { readerRef.current?.abort(); setImageSrc(null); onPendingChange(false); }}
-              disabled={uploading}
-              className="border border-zinc-700 py-2 rounded-md text-sm font-bold text-white transition hover:bg-zinc-800"
-            >
-              Renunta
-            </button>
+            <button type="button" onClick={handleUpload} disabled={uploading || !croppedAreaPixels}
+              className="bg-primary py-2 rounded-md text-sm font-bold text-white disabled:opacity-50">{uploading ? "Se încarcă..." : "Încarcă și continuă"}</button>
+            <button type="button" onClick={discardCurrent} disabled={uploading}
+              className="border border-zinc-700 py-2 rounded-md text-sm font-bold text-white disabled:opacity-50">Omite poza</button>
           </div>
+          <button type="button" disabled={uploading} onClick={() => {
+            queueRef.current.forEach(({ url }) => { URL.revokeObjectURL(url); objectUrls.current.delete(url); });
+            updateQueue([]); setError(null);
+          }} className="text-xs text-zinc-400 underline disabled:opacity-50">Renunță la pozele rămase</button>
         </div>
       )}
 
-      {value && (
-        <button
-          type="button"
-          onClick={handleDeleteImage}
-          disabled={uploading}
-          className="self-start text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Elimină imaginea din proiect
-        </button>
-      )}
-
-      {error && <p className="text-xs text-red-400">Eroare: {error}</p>}
+      {value.length > 0 && <div className="grid grid-cols-2 gap-3">
+        {value.map((url, index) => <div key={url} className={`overflow-hidden rounded-lg border ${index === 0 ? "border-primary" : "border-zinc-700"}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={url} alt={`Imagine proiect ${index + 1}`} width={240} height={135} className="aspect-video w-full object-cover" />
+          <div className="flex flex-col gap-2 p-2">
+            <button type="button" disabled={uploading || index === 0} onClick={() => changeImages(setProjectCover(valueRef.current, url))}
+              aria-pressed={index === 0} className="text-xs font-semibold text-white disabled:opacity-60">{index === 0 ? "★ Imagine principală" : "Setează ca principală"}</button>
+            <button type="button" disabled={uploading} onClick={() => changeImages(valueRef.current.filter((image) => image !== url))}
+              className="text-xs text-red-400 disabled:opacity-50">Elimină din proiect</button>
+          </div>
+        </div>)}
+      </div>}
+      {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
     </div>
   );
 };

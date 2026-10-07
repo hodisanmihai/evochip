@@ -1,6 +1,7 @@
 "use client";
 
 import { validateProject } from "@/lib/data/validation";
+import { projectImages } from "@/lib/projects/gallery";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -46,7 +47,7 @@ const ProjectForm = ({
   const active = useRef(true);
   const saveInFlight = useRef(false);
   const draftFiles = useRef(new Set<string>());
-  const persistedFiles = useRef(new Set([item?.image_url, item?.dyno_file_url].filter((url): url is string => Boolean(url))));
+  const persistedFiles = useRef(new Set([...projectImages(item?.image_url, item?.image_urls), item?.dyno_file_url].filter((url): url is string => Boolean(url))));
   useEffect(() => {
     active.current = true;
     const drafts = draftFiles.current;
@@ -147,7 +148,7 @@ const ProjectForm = ({
     try {
       const saved = await onSave({ ...formData, mods });
       if (saved) {
-        const kept = new Set([formData.image_url, formData.dyno_file_url]);
+        const kept = new Set([...formData.image_urls, formData.dyno_file_url]);
         const obsolete = [...persistedFiles.current, ...draftFiles.current].filter((url) => !kept.has(url));
         draftFiles.current.clear();
         const cleanupError = await cleanupProjectFiles(obsolete);
@@ -420,8 +421,8 @@ const ProjectForm = ({
         onUploaded={trackUpload}
         onBusyChange={setImageBusy}
         onPendingChange={setImagePending}
-        value={formData.image_url}
-        onChange={(url) => setFormData((prev) => ({ ...prev, image_url: url }))}
+        value={formData.image_urls}
+        onChange={(urls) => setFormData((prev) => ({ ...prev, image_urls: urls, image_url: urls[0] ?? "" }))}
       />
 
       <ProjectFileUpload

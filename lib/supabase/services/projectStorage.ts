@@ -37,6 +37,14 @@ export async function cleanupProjectFiles(urls: string[]): Promise<boolean> {
         return true;
       }
     }
+    // Gallery references must also be checked before deleting shared files.
+    // If the migration is missing, fail closed and keep the cleanup queued.
+    const { data, error } = await supabase.from("projects").select("id").contains("image_urls", [url]).limit(1);
+    if (error) throw error;
+    if (data?.length) {
+      updatePending([], [url]);
+      return true;
+    }
     return false;
   }, async (url) => {
     const path = projectStoragePath(url, process.env.NEXT_PUBLIC_SUPABASE_URL!);

@@ -1,5 +1,6 @@
 
 import { normalizeMods } from "../data/validation.ts";
+import { projectImages } from "../projects/gallery.ts";
 export interface CarBrand {
   id: number;
   car_brand: string;
@@ -34,6 +35,7 @@ export interface ProjectRow {
   new_torque: number | null;
   note: string;
   image_url: string;
+  image_urls?: string[] | null;
   dyno_file_url: string;
   video_url: string;
   mods: string[] | string | null;
@@ -57,7 +59,7 @@ type NumericFormField =
   | "new_torque";
 
 export type ProjectFields = Omit<ProjectRow, "id" | "mods" | NumericFormField> &
-  Record<NumericFormField, string> & { mods: string[] };
+  Record<NumericFormField, string> & { mods: string[]; image_urls: string[] };
 
 // Only the API boundary accepts both object and array relation shapes.
 type Relation<T> = T | T[] | null;
@@ -86,22 +88,26 @@ function normalizeCarModel(value: Relation<CarModelResponse>): CarModel | null {
 }
 
 export function normalizeProject(project: ProjectResponse): Project {
+  const images = projectImages(project.image_url, project.image_urls);
   return {
     ...project,
     mods: normalizeMods(project.mods),
+    image_url: images[0] ?? "",
+    image_urls: images,
     car_models: normalizeCarModel(project.car_models),
     stage: singleRelation(project.stage),
   };
 }
 
 export function normalizeAdminProject(project: AdminProjectResponse): AdminProject {
-  return { ...project, car_models: normalizeCarModel(project.car_models) };
+  const images = projectImages(project.image_url, project.image_urls);
+  return { ...project, image_url: images[0] ?? "", image_urls: images, car_models: normalizeCarModel(project.car_models) };
 }
 
 export const PROJECT_SELECT = `
   id, combustion, engine_capacity, engine_code, transmition,
   initial_power, initial_torque, new_power, new_torque,
-  note, image_url, dyno_file_url, video_url, mods,
+  note, image_url, image_urls, dyno_file_url, video_url, mods,
   stage (id, solution_name),
   car_models (id, car_model, car_brand, car_brands (id, car_brand))
 `;

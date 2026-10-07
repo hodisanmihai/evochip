@@ -1,4 +1,5 @@
 import { normalizeMods } from "@/lib/data/validation";
+import { projectImages } from "@/lib/projects/gallery";
 import { ProjectItem, ProjectFields } from "../../../types";
 
 const initialProjectState: ProjectFields = {
@@ -16,6 +17,7 @@ const initialProjectState: ProjectFields = {
   mods: [],
   stage: null,
   image_url: "",
+  image_urls: [],
   dyno_file_url: "",
   video_url: "",
 };
@@ -39,6 +41,7 @@ export const getProjectState = (item?: ProjectItem | null): ProjectFields => {
     mods: normalizeMods(item.mods),
     stage: item.stage ?? null,
     image_url: item.image_url || "",
+    image_urls: projectImages(item.image_url, item.image_urls),
     dyno_file_url: item.dyno_file_url || "",
     video_url: item.video_url || "",
   };

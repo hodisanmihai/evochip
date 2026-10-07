@@ -8,6 +8,7 @@ import { useNotification } from "../context/NotificationContext";
 
 import { notifyProjectsChanged } from "@/lib/projects/useProjectRefresh";
 import { cleanupProjectFiles } from "@/lib/supabase/services/projectStorage";
+import { projectImages } from "@/lib/projects/gallery";
 
 interface CrudProps {
   type: EntityType;
@@ -58,7 +59,7 @@ const Crud = ({
       if (error) throw error;
 
       if (type === "projects" && "image_url" in selectedItem) {
-        const failed = await cleanupProjectFiles([selectedItem.image_url, selectedItem.dyno_file_url]);
+        const failed = await cleanupProjectFiles([...projectImages(selectedItem.image_url, selectedItem.image_urls), selectedItem.dyno_file_url]);
         if (failed) console.warn("Unele fișiere ale proiectului nu au putut fi curățate.");
       }
       notifyProjectsChanged();

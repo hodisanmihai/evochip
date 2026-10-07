@@ -5,7 +5,8 @@ import { normalizeMods, safeWebUrl } from "@/lib/data/validation";
 import { useEffect, useState, useCallback } from "react";
 import { ArrowLeft, ArrowRight, Play, FileText } from "lucide-react";
 import Link from "next/link";
-import NextImage from "next/image";
+import ProjectGallery from "../components/ProjectGallery";
+import { projectImages } from "@/lib/projects/gallery";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeProject, PROJECT_SELECT } from "@/lib/types/project";
@@ -95,14 +96,7 @@ const Page = () => {
       </Link>
       <div className="w-full flex flex-col lg:flex-row gap-6 py-4">
         <div className="w-full lg:w-1/2 flex flex-col justify-start items-start uppercase">
-          <div className="relative w-full aspect-16/10 border border-primary rounded-md overflow-hidden">
-            <NextImage
-              src={project.image_url || "/resources/LOGO-EVOCHIP.png"}
-              alt={`${brandName} ${modelName}`}
-              fill
-              className="object-cover rounded-md"
-            />
-          </div>
+          <ProjectGallery images={projectImages(project.image_url, project.image_urls)} title={`${brandName} ${modelName}`} />
           <div className="relative w-full border-t-2 border-zinc-200/90 flex items-center justify-between p-2 px-3 mt-2">
             <div
               className="absolute left-0 top-0 bottom-0 bg-thirdcolor"

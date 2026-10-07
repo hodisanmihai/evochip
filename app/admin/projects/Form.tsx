@@ -1,6 +1,7 @@
 "use client";
 
 import { validateProject, normalizeMods, withPerformanceDefaults } from "@/lib/data/validation";
+import { projectImages } from "@/lib/projects/gallery";
 
 import { createClient } from "@/lib/supabase/client";
 import { useNotification } from "../context/NotificationContext";
@@ -77,6 +78,7 @@ const Form = ({ type, isOpen, onClose, item, onSaved }: FormProps) => {
     }
     const supabase = createClient();
 
+    const images = projectImages(data.image_url, data.image_urls);
     const payload: Omit<ProjectRow, "id"> = {
       car_models: data.car_models,
       combustion: data.combustion,
@@ -90,7 +92,8 @@ const Form = ({ type, isOpen, onClose, item, onSaved }: FormProps) => {
       note: data.note,
       mods: normalizeMods(data.mods),
       stage: data.stage,
-      image_url: data.image_url,
+      image_url: images[0] ?? "",
+      image_urls: images,
       dyno_file_url: data.dyno_file_url,
       video_url: data.video_url,
     };
@@ -110,7 +113,9 @@ const Form = ({ type, isOpen, onClose, item, onSaved }: FormProps) => {
         error && typeof error === "object" && "message" in error
           ? String(error.message)
           : "Încearcă din nou.";
-      show("Eroare la salvare: " + message, "error");
+      show(message.includes("image_urls")
+        ? "Galeria nu este încă activată în Supabase. Aplică migrarea pentru image_urls, apoi reîncearcă salvarea."
+        : "Eroare la salvare: " + message, "error");
       return false;
     }
   };
