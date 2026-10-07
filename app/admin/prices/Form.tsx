@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { notifyProjectsChanged } from "@/lib/projects/useProjectRefresh";
+
+import React, { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useNotification } from "../context/NotificationContext";
 
@@ -10,9 +12,7 @@ type FormItem = Omit<Partial<FormFields>, "price"> & {
 };
 
 interface FormProps {
-  isOpen: boolean;
   onClose: () => void;
-  initialData?: Partial<FormFields>;
   item?: FormItem | null;
   onSaved?: () => void;
 }
@@ -28,24 +28,7 @@ interface FormFields {
   text_5: string;
 }
 
-const initialFormState: FormFields = {
-  title: "",
-  price: "",
-  description: "",
-  text_1: "",
-  text_2: "",
-  text_3: "",
-  text_4: "",
-  text_5: "",
-};
-
-const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
-  const [formData, setFormData] = useState<FormFields>(initialFormState);
-
-  const { show } = useNotification();
-  const [saving, setSaving] = useState(false);
-
-  const initialItemState = {
+const getInitialState = (item?: FormItem | null): FormFields => ({
     title: item?.title ?? "",
     price: item?.price?.toString() ?? "",
     description: item?.description ?? "",
@@ -54,8 +37,15 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
     text_3: item?.text_3 ?? "",
     text_4: item?.text_4 ?? "",
     text_5: item?.text_5 ?? "",
-  };
+});
 
+const Form = ({ onClose, item, onSaved }: FormProps) => {
+  const [formData, setFormData] = useState<FormFields>(() => getInitialState(item));
+
+  const { show } = useNotification();
+  const [saving, setSaving] = useState(false);
+
+  const initialItemState = getInitialState(item);
   const isUnchanged =
     formData.title === initialItemState.title &&
     formData.price === initialItemState.price &&
@@ -65,26 +55,6 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
     formData.text_3 === initialItemState.text_3 &&
     formData.text_4 === initialItemState.text_4 &&
     formData.text_5 === initialItemState.text_5;
-
-  useEffect(() => {
-    const data = initialData ?? item;
-    if (data) {
-      setTimeout(() => {
-        setFormData({
-          title: data.title || "",
-          price: data.price?.toString() || "",
-          description: data.description || "",
-          text_1: data.text_1 || "",
-          text_2: data.text_2 || "",
-          text_3: data.text_3 || "",
-          text_4: data.text_4 || "",
-          text_5: data.text_5 || "",
-        });
-      }, 0);
-    } else {
-      setTimeout(() => setFormData(initialFormState), 0);
-    }
-  }, [initialData, isOpen, item]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -107,6 +77,8 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
   ];
 
   const handleSaveProduct = async (formData: FormFields) => {
+    if (saving) return;
+    if (!formData.title.trim() || !formData.price.trim()) { show("Completează titlul și prețul.", "error"); return; }
     setSaving(true);
     const supabase = createClient();
     try {
@@ -123,7 +95,7 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
             text_4: formData.text_4,
             text_5: formData.text_5,
           })
-          .eq("id", item.id);
+          .eq("id", item.id).select("id").single();
 
         if (error) throw error;
         show("Prețul a fost actualizat cu succes", "success");
@@ -139,12 +111,13 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
             text_4: formData.text_4,
             text_5: formData.text_5,
           },
-        ]);
+        ]).select("id").single();
 
         if (error) throw error;
         show("Preț salvat cu succes", "success");
       }
 
+      notifyProjectsChanged();
       onSaved?.();
     } catch (err: unknown) {
       const msg =
@@ -156,8 +129,6 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
       setSaving(false);
     }
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center  bg-black/60 backdrop-blur-sm p-4 ">
@@ -173,7 +144,7 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
             await handleSaveProduct(formData);
           }}
         >
-          <div className="w-full flex flex-col gap-4">
+          <fieldset disabled={saving} className="w-full flex flex-col gap-4">
             <input
               name="title"
               value={formData.title}
@@ -208,7 +179,7 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
                 className="p-2.5 rounded-md bg-[#222222] border border-zinc-800 text-white focus:outline-none focus:border-red-500"
               />
             ))}
-          </div>
+          </fieldset>
 
           <button
             type="submit"
@@ -218,6 +189,8 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
             {saving ? "Se salvează..." : "Salvează"}
           </button>
           <button
+            type="button"
+            disabled={saving}
             onClick={onClose}
             className="bg-red-600 md:bg-transparent md:hover:bg-red-600 text-white font-bold py-2 rounded-md transition"
           >

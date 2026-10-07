@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import { messengerUrl } from "@/lib/data/validation";
+
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -25,16 +27,6 @@ const NavBar = ({ contact }: NavbarProps) => {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const linksRef = useRef<HTMLAnchorElement[]>([]);
 
-  const getMessengerLink = (facebookUrl?: string) => {
-    if (!facebookUrl) return "#";
-
-    const username = facebookUrl
-      .replace("https://www.facebook.com/", "")
-      .replace("https://facebook.com/", "")
-      .replace("/", "");
-
-    return `https://m.me/${username}`;
-  };
 
   const links = [
     { label: "Acasă", href: "#" },
@@ -62,7 +54,7 @@ const NavBar = ({ contact }: NavbarProps) => {
     },
     {
       id: "messenger",
-      href: getMessengerLink(contact?.facebook_url),
+      href: messengerUrl(contact?.facebook_url),
       icon: <FaFacebookMessenger className="w-4 h-4" />,
     },
   ];
@@ -152,11 +144,13 @@ const NavBar = ({ contact }: NavbarProps) => {
             <nav className="flex flex-col gap-6 text-white text-3xl text-center">
               {links.map((link) =>
                 link.href.startsWith("#") ? (
-                  <a key={link.label} href={link.href}>
+                  <a key={link.label} href={link.href}
+                    onClick={() => setMenuOpen(false)}>
                     {link.label}
                   </a>
                 ) : (
-                  <Link key={link.label} href={link.href}>
+                  <Link key={link.label} href={link.href}
+                    onClick={() => setMenuOpen(false)}>
                     {link.label}
                   </Link>
                 )

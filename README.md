@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EvoChip
 
-## Getting Started
+Site Next.js 16 / React 19 pentru prezentarea serviciilor, proiectelor și prețurilor EvoChip, cu administrare și fișiere în Supabase.
 
-First, run the development server:
+## Pornire
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Instalează dependențele cu `npm ci`. Configurează în `.env.local`:
+
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Rulează `npm run dev` și deschide `http://localhost:3000`. Adminul este la `/admin` și folosește autentificare Supabase.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Verificări
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run typecheck` — tipuri și declarații nefolosite.
+- `npm run lint` — reguli ESLint.
+- `npm test` — validare, normalizarea proiectelor, linkuri, paginare și curățarea fișierelor. Necesită Node.js cu suport nativ pentru importuri TypeScript (Node 22.18+).
+- `npm run build`, apoi `npm start` — build de producție și pornire. Buildul descarcă Montserrat din Google Fonts și necesită acces la rețea.
 
-## Learn More
+## Date
 
-To learn more about Next.js, take a look at the following resources:
+Tabele: `projects`, `car_models`, `car_brands`, `stage`, `prices`, `contact`. Fișiere: bucketul `car-files`, directoarele `car-photos` și `car-dyno`. Conținutul editorial este în `app/data/continut.json`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Ștergerea unui obiect direct din Storage nu elimină URL-ul salvat în proiect. Pentru eliminare completă folosește formularul admin și salvează modificarea.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Politicile RLS și Storage sunt administrate în Supabase; schema și politicile nu sunt versionate în acest repository. Auditul și limitele verificate sunt documentate în [DATA-FLOW-AUDIT.md](DATA-FLOW-AUDIT.md).

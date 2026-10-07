@@ -1,3 +1,4 @@
+import { normalizeMods } from "@/lib/data/validation";
 import { ProjectItem, ProjectFields } from "../../../types";
 
 const initialProjectState: ProjectFields = {
@@ -22,8 +23,6 @@ const initialProjectState: ProjectFields = {
 export const getProjectState = (item?: ProjectItem | null): ProjectFields => {
   if (!item) return initialProjectState;
 
-  console.log("dyno_file_url:", item.dyno_file_url);
-  console.log("image_url:", item.image_url);
 
   return {
     car_models: item.car_models?.id ?? null,
@@ -37,53 +36,10 @@ export const getProjectState = (item?: ProjectItem | null): ProjectFields => {
     new_power: item.new_power?.toString() || "",
     new_torque: item.new_torque?.toString() || "",
     note: item.note || "",
-    mods: getProjectMods(item.mods),
+    mods: normalizeMods(item.mods),
     stage: item.stage ?? null,
     image_url: item.image_url || "",
     dyno_file_url: item.dyno_file_url || "",
     video_url: item.video_url || "",
   };
-};
-
-export const getProjectMods = (mods: ProjectItem["mods"]): string[] => {
-  if (!mods) return [];
-
-  if (typeof mods === "string") {
-    try {
-      const parsed = JSON.parse(mods);
-      if (Array.isArray(parsed)) {
-        return parsed
-          .map((m) => {
-            try {
-              return JSON.parse(m);
-            } catch {
-              return m;
-            }
-          })
-          .filter((m): m is string => typeof m === "string");
-      }
-    } catch {
-      return mods
-        .split(",")
-        .map((m) => m.trim())
-        .filter(Boolean);
-    }
-  }
-
-  if (Array.isArray(mods)) {
-    return mods
-      .map((m) => {
-        if (typeof m === "string") {
-          try {
-            return JSON.parse(m);
-          } catch {
-            return m;
-          }
-        }
-        return String(m);
-      })
-      .filter((m): m is string => typeof m === "string");
-  }
-
-  return [];
 };

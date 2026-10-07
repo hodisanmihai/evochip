@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useProjectRefresh } from "@/lib/projects/useProjectRefresh";
 import { createClient } from "@/lib/supabase/client";
 import { useCarFilter } from "../context/CarFilterContext";
 
@@ -12,6 +13,10 @@ const ActiveFilters = () => {
   const [modelName, setModelName] = useState<string | null>(null);
   const [stageName, setStageName] = useState<string | null>(null);
 
+  const [revision, setRevision] = useState(0);
+  const refresh = useCallback(() => setRevision((value) => value + 1), []);
+  useProjectRefresh(refresh);
+
   useEffect(() => {
     if (!selectedBrandId) return;
     let cancelled = false;
@@ -21,12 +26,12 @@ const ActiveFilters = () => {
       .eq("id", selectedBrandId)
       .single()
       .then(({ data }) => {
-        if (!cancelled && data) setBrandName(data.car_brand);
+        if (!cancelled) setBrandName(data?.car_brand ?? null);
       });
     return () => {
       cancelled = true;
     };
-  }, [selectedBrandId]);
+  }, [selectedBrandId, revision]);
 
   useEffect(() => {
     if (!selectedModelId) return;
@@ -37,12 +42,12 @@ const ActiveFilters = () => {
       .eq("id", selectedModelId)
       .single()
       .then(({ data }) => {
-        if (!cancelled && data) setModelName(data.car_model);
+        if (!cancelled) setModelName(data?.car_model ?? null);
       });
     return () => {
       cancelled = true;
     };
-  }, [selectedModelId]);
+  }, [selectedModelId, revision]);
 
   useEffect(() => {
     if (!selectedStage) return;
@@ -53,12 +58,12 @@ const ActiveFilters = () => {
       .eq("id", selectedStage)
       .single()
       .then(({ data }) => {
-        if (!cancelled && data) setStageName(data.solution_name);
+        if (!cancelled) setStageName(data?.solution_name ?? null);
       });
     return () => {
       cancelled = true;
     };
-  }, [selectedStage]);
+  }, [selectedStage, revision]);
 
   if (!selectedBrandId && !selectedModelId && !selectedStage && !searchQuery) {
     return null;

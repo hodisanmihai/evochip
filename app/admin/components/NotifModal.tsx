@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useLayoutEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 
 interface NotifModalProps {
@@ -74,19 +74,19 @@ const NotifModal = ({
             strokeWidth="2"
             stroke={color}
             fill={color}
-            d="M 8 0 
-               Q 4 4.8, 8 9.6 
-               T 8 19.2 
-               Q 4 24, 8 28.8 
-               T 8 38.4 
-               Q 4 43.2, 8 48 
-               T 8 57.6 
-               Q 4 62.4, 8 67.2 
-               T 8 76.8 
-               Q 4 81.6, 8 86.4 
-               T 8 96 
-               L 0 96 
-               L 0 0 
+            d="M 8 0
+               Q 4 4.8, 8 9.6
+               T 8 19.2
+               Q 4 24, 8 28.8
+               T 8 38.4
+               Q 4 43.2, 8 48
+               T 8 57.6
+               Q 4 62.4, 8 67.2
+               T 8 76.8
+               Q 4 81.6, 8 86.4
+               T 8 96
+               L 0 96
+               L 0 0
                Z"
           ></path>
         </svg>

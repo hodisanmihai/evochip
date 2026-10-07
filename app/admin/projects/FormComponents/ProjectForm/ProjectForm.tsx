@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { validateProject } from "@/lib/data/validation";
+
+import { useEffect, useRef, useState } from "react";
 import {
   inputClass,
   labelClass,
@@ -17,137 +19,20 @@ import { getProjectState } from "./utils/projectForm.utils";
 import { ProjectItem, ProjectFields } from "../../types";
 import { useNotification } from "@/app/admin/context/NotificationContext";
 
-const isFormValid = (formData: ProjectFields): boolean => {
-  const requiredFields: (keyof ProjectFields)[] = [
-    "car_models",
-    "combustion",
-    "transmition",
-    "engine_capacity",
-    "engine_code",
-    "initial_power",
-    "new_power",
-    "initial_torque",
-    "new_torque",
-    "stage",
-    "image_url",
-    "dyno_file_url",
-    "mods",
-  ];
+import { cleanupProjectFiles } from "@/lib/supabase/services/projectStorage";
 
-  for (const field of requiredFields) {
-    const value = formData[field];
-
-    if (
-      value === null ||
-      value === undefined ||
-      value === "" ||
-      (Array.isArray(value) && value.length === 0)
-    ) {
-      return false;
-    }
-  }
-
-  if (
-    isNaN(Number(formData.engine_capacity)) ||
-    isNaN(Number(formData.initial_power)) ||
-    isNaN(Number(formData.new_power)) ||
-    isNaN(Number(formData.initial_torque)) ||
-    isNaN(Number(formData.new_torque))
-  ) {
-    return false;
-  }
-
-  // logic checks
-  if (
-    Number(formData.new_power) < Number(formData.initial_power) ||
-    Number(formData.new_torque) < Number(formData.initial_torque)
-  ) {
-    return false;
-  }
-
-  return true;
-};
-
-const getValidationErrors = (
-  formData: ProjectFields
-): Record<string, string> => {
-  const errors: Record<string, string> = {};
-
-  const requiredFields: (keyof ProjectFields)[] = [
-    "car_models",
-    "combustion",
-    "transmition",
-    "engine_capacity",
-    "engine_code",
-    "initial_power",
-    "new_power",
-    "initial_torque",
-    "new_torque",
-    "stage",
-  ];
-
-  for (const field of requiredFields) {
-    const value = formData[field];
-
-    if (
-      value === null ||
-      value === undefined ||
-      value === "" ||
-      (Array.isArray(value) && value.length === 0)
-    ) {
-      errors[field] = "Acest câmp este obligatoriu";
-    }
-  }
-
-  if (formData.engine_capacity && isNaN(Number(formData.engine_capacity))) {
-    errors.engine_capacity = "Capacitate motor trebuie să fie număr";
-  }
-
-  if (formData.initial_power && isNaN(Number(formData.initial_power))) {
-    errors.initial_power = "Putere inițială trebuie să fie număr";
-  }
-
-  if (formData.new_power && isNaN(Number(formData.new_power))) {
-    errors.new_power = "Putere nouă trebuie să fie număr";
-  }
-
-  if (formData.initial_torque && isNaN(Number(formData.initial_torque))) {
-    errors.initial_torque = "Cuplu inițial trebuie să fie număr";
-  }
-
-  if (formData.new_torque && isNaN(Number(formData.new_torque))) {
-    errors.new_torque = "Cuplu nou trebuie să fie număr";
-  }
-
-  // logic checks
-  if (
-    formData.initial_power &&
-    formData.new_power &&
-    Number(formData.new_power) < Number(formData.initial_power)
-  ) {
-    errors.new_power =
-      "Putere nouă trebuie să fie mai mare sau egală cu puterea inițială";
-  }
-
-  if (
-    formData.initial_torque &&
-    formData.new_torque &&
-    Number(formData.new_torque) < Number(formData.initial_torque)
-  ) {
-    errors.new_torque =
-      "Cuplu nou trebuie să fie mai mare sau egal cu cuplul inițial";
-  }
-
-  return errors;
-};
+const getValidationErrors = validateProject;
+const isFormValid = (data: ProjectFields) => Object.keys(validateProject(data)).length === 0;
 
 const ProjectForm = ({
   item,
   onSave,
+  onCommitted,
   onClose,
 }: {
   item?: ProjectItem | null;
-  onSave: (data: ProjectFields) => Promise<void>;
+  onSave: (data: ProjectFields) => Promise<boolean>;
+  onCommitted: () => void;
   onClose: () => void;
 }) => {
   const [formData, setFormData] = useState<ProjectFields>(() =>
@@ -155,6 +40,25 @@ const ProjectForm = ({
   );
   const [modInput, setModInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const [imagePending, setImagePending] = useState(false);
+  const [imageBusy, setImageBusy] = useState(false);
+  const [fileBusy, setFileBusy] = useState(false);
+  const active = useRef(true);
+  const saveInFlight = useRef(false);
+  const draftFiles = useRef(new Set<string>());
+  const persistedFiles = useRef(new Set([item?.image_url, item?.dyno_file_url].filter((url): url is string => Boolean(url))));
+  useEffect(() => {
+    active.current = true;
+    const drafts = draftFiles.current;
+    return () => {
+      active.current = false;
+      if (!saveInFlight.current) void cleanupProjectFiles([...drafts]);
+    };
+  }, []);
+  const trackUpload = (url: string) => {
+    if (active.current) draftFiles.current.add(url);
+    else void cleanupProjectFiles([url]);
+  };
   const [brandId, setBrandId] = useState<number | null>(() => {
     if (!item?.car_models) return null;
     return (
@@ -222,6 +126,7 @@ const ProjectForm = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (saving || imageBusy || imagePending || fileBusy) return;
 
     const errors = getValidationErrors(formData);
 
@@ -238,14 +143,32 @@ const ProjectForm = ({
     setFormData((prev) => ({ ...prev, mods }));
     setModInput("");
     setSaving(true);
-    await onSave({ ...formData, mods });
-    setSaving(false);
+    saveInFlight.current = true;
+    try {
+      const saved = await onSave({ ...formData, mods });
+      if (saved) {
+        const kept = new Set([formData.image_url, formData.dyno_file_url]);
+        const obsolete = [...persistedFiles.current, ...draftFiles.current].filter((url) => !kept.has(url));
+        draftFiles.current.clear();
+        const cleanupError = await cleanupProjectFiles(obsolete);
+        if (cleanupError) show("Proiectul este salvat, dar unele fișiere vechi nu au putut fi curățate.", "error");
+        onCommitted();
+        onClose();
+      }
+    } catch {
+      show("Salvarea a eșuat. Încearcă din nou.", "error");
+    } finally {
+      saveInFlight.current = false;
+      if (!active.current) void cleanupProjectFiles([...draftFiles.current]);
+      setSaving(false);
+    }
   };
 
   const isValid = isFormValid(formData);
 
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+      <fieldset disabled={saving} className={saving ? "contents pointer-events-none" : "contents"}>
       <BrandAutocomplete
         value={brandId}
         onChange={(id: number) => {
@@ -393,13 +316,13 @@ const ProjectForm = ({
             )}
           </div>
           <div>
-            <label className={labelClass}>Putere Noua (CP)</label>
+            <label className={labelClass}>Putere Noua (CP) — opțional</label>
             <input
               name="new_power"
               value={formData.new_power}
               onChange={handleChange}
               type="number"
-              placeholder="ex: 200"
+              placeholder={formData.initial_power || "Aceeași ca puterea inițială"}
               className={`${inputClass} ${
                 validationErrors.new_power ? "border-red-500" : ""
               }`}
@@ -429,13 +352,13 @@ const ProjectForm = ({
             )}
           </div>
           <div>
-            <label className={labelClass}>Cuplu Nou (Nm)</label>
+            <label className={labelClass}>Cuplu Nou (Nm) — opțional</label>
             <input
               name="new_torque"
               value={formData.new_torque}
               onChange={handleChange}
               type="number"
-              placeholder="ex: 420"
+              placeholder={formData.initial_torque || "Același ca cuplul inițial"}
               className={`${inputClass} ${
                 validationErrors.new_torque ? "border-red-500" : ""
               }`}
@@ -448,6 +371,10 @@ const ProjectForm = ({
           </div>
         </div>
       </div>
+
+      <p className="text-xs text-zinc-400">
+        Dacă lași puterea sau cuplul noi goale, se salvează valorile inițiale.
+      </p>
 
       <StageSelect
         value={formData.stage}
@@ -490,11 +417,16 @@ const ProjectForm = ({
       </div>
 
       <ProjectImageUpload
+        onUploaded={trackUpload}
+        onBusyChange={setImageBusy}
+        onPendingChange={setImagePending}
         value={formData.image_url}
         onChange={(url) => setFormData((prev) => ({ ...prev, image_url: url }))}
       />
 
       <ProjectFileUpload
+        onUploaded={trackUpload}
+        onBusyChange={setFileBusy}
         value={formData.dyno_file_url}
         onChange={(url) =>
           setFormData((prev) => ({ ...prev, dyno_file_url: url }))
@@ -539,9 +471,11 @@ const ProjectForm = ({
 
       <FormActions
         saving={saving}
-        disabled={saving || !isValid}
+        disabled={saving || imageBusy || imagePending || fileBusy || !isValid}
+        closeDisabled={saving || imageBusy || fileBusy}
         onClose={onClose}
       />
+      </fieldset>
     </form>
   );
 };

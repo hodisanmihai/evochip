@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { allRows } from "@/lib/supabase/services/readAll";
+
+import SafeRichText from "@/app/components/SafeRichText";
+
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { PriceItem } from "./page";
 
@@ -16,30 +20,37 @@ const List = ({ selectedItem, onSelectItem, refreshKey }: ListProps) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchPrices = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const { data, error: supabaseError } = await supabase
+        const { data, error: supabaseError } = await allRows((from, to) => supabase
           .from("prices")
           .select("*")
-          .order("id", { ascending: true });
+          .order("id", { ascending: true }).abortSignal(controller.signal).range(from, to));
 
+        if (controller.signal.aborted) return;
         if (supabaseError) {
-          setError(supabaseError.message);
+          setError(supabaseError.message ?? "Nu am putut încărca datele.");
         } else {
+          if (controller.signal.aborted) return;
           setItems(data || []);
         }
       } catch (err) {
+        if (controller.signal.aborted) return;
         if (err instanceof Error) {
           setError(err.message);
         } else {
           setError("A apărut o eroare necunoscută.");
         }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchPrices();
+    return () => controller.abort();
   }, [refreshKey]);
 
   if (loading)
@@ -79,14 +90,12 @@ const List = ({ selectedItem, onSelectItem, refreshKey }: ListProps) => {
                 ).map((key) => {
                   const textValue = item[key];
 
-                  {
-                  }
                   if (!textValue) return null;
 
                   return (
                     <div key={key} className="flex gap-1">
                       <span>•</span>
-                      <span dangerouslySetInnerHTML={{ __html: textValue }} />
+                      <SafeRichText text={textValue} />
                     </div>
                   );
                 })}

@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { allRows } from "@/lib/supabase/services/readAll";
+
+import { useCallback, useEffect, useState } from "react";
+import { useProjectRefresh } from "@/lib/projects/useProjectRefresh";
+
 import { createClient } from "@/lib/supabase/client";
 import { useCarFilter } from "../context/CarFilterContext";
 import { useRouter, usePathname } from "next/navigation";
@@ -40,11 +44,18 @@ const CarDropDown = () => {
     }
   };
 
+  const [error, setError] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
+  const refresh = useCallback(() => setRevision((value) => value + 1), []);
+  useProjectRefresh(refresh);
+
   useEffect(() => {
+    const controller = new AbortController();
     const fetchData = async () => {
+      setError(null);
       const supabase = createClient();
 
-      const { data: carModels } = await supabase
+      const { data: carModels, error: readError } = await allRows((from, to) => supabase
         .from("car_models")
         .select(
           `
@@ -56,7 +67,10 @@ const CarDropDown = () => {
           )
         `
         )
-        .order("car_model", { ascending: true });
+        .order("car_model", { ascending: true })
+        .order("id", { ascending: true }).abortSignal(controller.signal).range(from, to));
+      if (controller.signal.aborted) return;
+      if (readError) { setError("Nu am putut încărca opțiunile."); return; }
 
       if (!carModels) return;
 
@@ -94,7 +108,8 @@ const CarDropDown = () => {
     };
 
     fetchData();
-  }, []);
+    return () => controller.abort();
+  }, [revision]);
 
   return (
     <div className="mt-20 md:mt-25">
@@ -173,6 +188,7 @@ const CarDropDown = () => {
           )}
         </div>
       ))}
+      {error && <p role="alert" className="text-xs text-red-400">{error} <button type="button" onClick={refresh} className="underline">Reîncearcă</button></p>}
     </div>
   );
 };

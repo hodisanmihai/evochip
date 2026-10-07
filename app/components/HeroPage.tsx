@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import continut from "../data/continut.json";
 import gsap from "gsap";
 

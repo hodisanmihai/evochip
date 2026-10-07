@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Crud from "./Crud";
 import List, { ContactItem } from "./List";
 
 const Page = () => {
   const [selectedItem, setSelectedItem] = useState<ContactItem | null>(null);
+  const [isEmpty, setIsEmpty] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const refreshList = () => setRefreshKey((prev) => prev + 1);
@@ -18,12 +19,14 @@ const Page = () => {
         {/* CRUD */}
         <Crud
           selectedItem={selectedItem}
+          canCreate={isEmpty}
           onRefresh={refreshList}
         />
         {/* Item List */}
         <div className="bg-[#111111] p-4 rounded-md md:w-[80%] max-h-160 overflow-y-auto ">
           <List
             selectedItem={selectedItem}
+            onEmptyChange={setIsEmpty}
             onSelectItem={setSelectedItem}
             refreshKey={refreshKey}
           />

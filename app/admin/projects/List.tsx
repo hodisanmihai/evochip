@@ -1,14 +1,19 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { allRows } from "@/lib/supabase/services/readAll";
+
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   EntityType,
   ProjectItem,
-  CarModelItem,
+  CarBrandItem,
   RemapItem,
   AnyItem,
 } from "./types";
+
+import { normalizeAdminProject } from "@/lib/types/project";
+import type { AdminProjectResponse } from "@/lib/types/project";
 
 interface ListProps {
   type: EntityType;
@@ -42,6 +47,7 @@ const List = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchData = async () => {
       setLoading(true);
       setError(null);
@@ -49,23 +55,27 @@ const List = ({
         const supabase = createClient();
 
         if (type === "car_brands") {
-          const { data, error: supabaseError } = await supabase
+          const { data, error: supabaseError } = await allRows((from, to) => supabase
             .from("car_brands")
             .select("*")
-            .order("car_brand", { ascending: true });
+            .order("car_brand", { ascending: true }).abortSignal(controller.signal)
+        .order("id", { ascending: true }).range(from, to));
 
           if (supabaseError) throw supabaseError;
+          if (controller.signal.aborted) return;
           setItems(data || []);
         } else if (type === "remaps") {
-          const { data, error: supabaseError } = await supabase
+          const { data, error: supabaseError } = await allRows((from, to) => supabase
             .from("stage")
             .select("*")
-            .order("solution_name", { ascending: true });
+            .order("solution_name", { ascending: true }).abortSignal(controller.signal)
+        .order("id", { ascending: true }).range(from, to));
 
           if (supabaseError) throw supabaseError;
+          if (controller.signal.aborted) return;
           setItems(data || []);
         } else {
-          const { data, error: supabaseError } = await supabase
+          const { data, error: supabaseError } = await allRows((from, to) => supabase
             .from("projects")
             .select(
               `
@@ -73,6 +83,7 @@ const List = ({
               car_models (
                 id,
                 car_model,
+                car_brand,
                 car_brands (
                   id,
                   car_brand
@@ -80,23 +91,27 @@ const List = ({
               )
             `
             )
-            .order("id", { ascending: false });
+            .order("id", { ascending: false })
+            .abortSignal(controller.signal).returns<AdminProjectResponse[]>().range(from, to));
 
           if (supabaseError) throw supabaseError;
-          setItems(data || []);
+          if (controller.signal.aborted) return;
+          setItems((data ?? []).map(normalizeAdminProject));
         }
       } catch (err) {
+        if (controller.signal.aborted) return;
         if (err instanceof Error) {
           setError(err.message);
         } else {
           setError("A apărut o eroare necunoscută.");
         }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchData();
+    return () => controller.abort();
   }, [refreshKey, type]);
 
   const filteredItems = useMemo(() => {
@@ -105,7 +120,7 @@ const List = ({
     if (!query || type === "remaps") return items;
 
     if (type === "car_brands") {
-      return (items as CarModelItem[]).filter((item) =>
+      return (items as CarBrandItem[]).filter((item) =>
         item.car_brand.toLowerCase().includes(query)
       );
     }
@@ -140,11 +155,13 @@ const List = ({
   const totalPages =
     pageSize === Infinity ? 1 : Math.ceil(filteredItems.length / pageSize);
 
+  const visiblePage = Math.min(currentPage, Math.max(1, totalPages));
+
   const paginatedItems = useMemo(() => {
     if (pageSize === Infinity) return filteredItems;
-    const start = (currentPage - 1) * pageSize;
+    const start = (visiblePage - 1) * pageSize;
     return filteredItems.slice(start, start + pageSize);
-  }, [filteredItems, currentPage, pageSize]);
+  }, [filteredItems, visiblePage, pageSize]);
 
   const showSearch = type === "projects" || type === "car_brands";
   const searchPlaceholder =
@@ -172,8 +189,8 @@ const List = ({
     totalPages > 1 ? (
       <div className="flex items-center justify-center gap-1 px-4 pb-4 pt-2">
         <button
-          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
+          onClick={() => onPageChange(Math.max(1, visiblePage - 1))}
+          disabled={visiblePage === 1}
           className="px-3 py-1.5 rounded-md text-sm font-medium bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
           ←
@@ -183,11 +200,11 @@ const List = ({
           const isVisible =
             page === 1 ||
             page === totalPages ||
-            Math.abs(page - currentPage) <= 1;
+            Math.abs(page - visiblePage) <= 1;
           const isEllipsisBefore =
-            page === currentPage - 2 && currentPage - 2 > 1;
+            page === visiblePage - 2 && visiblePage - 2 > 1;
           const isEllipsisAfter =
-            page === currentPage + 2 && currentPage + 2 < totalPages;
+            page === visiblePage + 2 && visiblePage + 2 < totalPages;
 
           if (isEllipsisBefore || isEllipsisAfter) {
             return (
@@ -204,7 +221,7 @@ const List = ({
               key={page}
               onClick={() => onPageChange(page)}
               className={`min-w-8 px-3 py-1.5 rounded-md text-sm font-medium border transition-all ${
-                page === currentPage
+                page === visiblePage
                   ? "bg-red-500 border-red-500 text-white"
                   : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white"
               }`}
@@ -215,8 +232,8 @@ const List = ({
         })}
 
         <button
-          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, visiblePage + 1))}
+          disabled={visiblePage === totalPages}
           className="px-3 py-1.5 rounded-md text-sm font-medium bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
           →
@@ -248,7 +265,7 @@ const List = ({
         ) : (
           <>
             <div className="w-full p-4 flex flex-col gap-2">
-              {(paginatedItems as CarModelItem[]).map((item) => {
+              {(paginatedItems as CarBrandItem[]).map((item) => {
                 const isSelected = selectedItem?.id === item.id;
                 return (
                   <div

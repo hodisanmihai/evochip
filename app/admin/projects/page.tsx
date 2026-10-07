@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Crud from "./Crud";
 import List from "./List";
 import { EntityType, AnyItem } from "./types";

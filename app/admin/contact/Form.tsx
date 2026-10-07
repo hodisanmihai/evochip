@@ -1,23 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { phoneDigits, safeWebUrl } from "@/lib/data/validation";
+
+import { notifyProjectsChanged } from "@/lib/projects/useProjectRefresh";
+
+import React, { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useNotification } from "../context/NotificationContext";
 
-// Tip pentru elementul primit ca prop (Omit/Partial adaptat noilor câmpuri)
 type FormItem = Partial<FormFields> & {
   id?: string | number;
 };
 
 interface FormProps {
-  isOpen: boolean;
   onClose: () => void;
-  initialData?: Partial<FormFields>;
   item?: FormItem | null;
   onSaved?: () => void;
 }
 
-// Interfața actualizată exact ca în baza ta de date
 interface FormFields {
   telefon: string;
   email: string;
@@ -26,53 +26,28 @@ interface FormFields {
   tiktok_url: string;
 }
 
-const initialFormState: FormFields = {
-  telefon: "",
-  email: "",
-  facebook_url: "",
-  instagram_url: "",
-  tiktok_url: "",
-};
-
-const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
-  const [formData, setFormData] = useState<FormFields>(initialFormState);
-
-  const { show } = useNotification();
-  const [saving, setSaving] = useState(false);
-
-  // Starea inițială a itemului pentru a verifica dacă s-a schimbat ceva
-  const initialItemState = {
+const getInitialState = (item?: FormItem | null): FormFields => ({
     telefon: item?.telefon ?? "",
     email: item?.email ?? "",
     facebook_url: item?.facebook_url ?? "",
     instagram_url: item?.instagram_url ?? "",
     tiktok_url: item?.tiktok_url ?? "",
-  };
+});
+
+const Form = ({ onClose, item, onSaved }: FormProps) => {
+  const [formData, setFormData] = useState<FormFields>(() => getInitialState(item));
+
+  const { show } = useNotification();
+  const [saving, setSaving] = useState(false);
 
   // Verifică dacă datele din inputuri sunt identice cu cele din baza de date
+  const initialItemState = getInitialState(item);
   const isUnchanged =
     formData.telefon === initialItemState.telefon &&
     formData.email === initialItemState.email &&
     formData.facebook_url === initialItemState.facebook_url &&
     formData.instagram_url === initialItemState.instagram_url &&
     formData.tiktok_url === initialItemState.tiktok_url;
-
-  useEffect(() => {
-    const data = initialData ?? item;
-    if (data) {
-      setTimeout(() => {
-        setFormData({
-          telefon: data.telefon || "",
-          email: data.email || "",
-          facebook_url: data.facebook_url || "",
-          instagram_url: data.instagram_url || "",
-          tiktok_url: data.tiktok_url || "",
-        });
-      }, 0);
-    } else {
-      setTimeout(() => setFormData(initialFormState), 0);
-    }
-  }, [initialData, isOpen, item]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -87,6 +62,12 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
   };
 
   const handleSaveContact = async (formData: FormFields) => {
+    if (saving) return;
+    formData = { ...formData, telefon: phoneDigits(formData.telefon), email: formData.email.trim() };
+    if (!/^[0-9]{8,15}$/.test(formData.telefon) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { show("Introdu un telefon și un email valide.", "error"); return; }
+    for (const key of ["facebook_url", "instagram_url", "tiktok_url"] as const) {
+      if (formData[key] && !safeWebUrl(formData[key])) { show("Linkurile trebuie să folosească http sau https.", "error"); return; }
+    }
     setSaving(true);
     const supabase = createClient();
     try {
@@ -101,7 +82,7 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
             instagram_url: formData.instagram_url,
             tiktok_url: formData.tiktok_url,
           })
-          .eq("id", item.id);
+          .eq("id", item.id).select("id").single();
 
         if (error) throw error;
         show("Link-urile de contact au fost actualizate", "success");
@@ -115,12 +96,13 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
             instagram_url: formData.instagram_url,
             tiktok_url: formData.tiktok_url,
           },
-        ]);
+        ]).select("id").single();
 
         if (error) throw error;
         show("Link-urile de contact au fost salvate", "success");
       }
 
+      notifyProjectsChanged();
       onSaved?.();
     } catch (err: unknown) {
       const msg =
@@ -132,8 +114,6 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
       setSaving(false);
     }
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 ">
@@ -149,7 +129,7 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
             await handleSaveContact(formData);
           }}
         >
-          <div className="w-full flex flex-col gap-4">
+          <fieldset disabled={saving} className="w-full flex flex-col gap-4">
             <div>
               <label className="text-xs text-zinc-400 mb-1 block">
                 Număr Telefon
@@ -219,7 +199,7 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
                 className="w-full p-2.5 rounded-md bg-[#222222] border border-zinc-800 text-white focus:outline-none focus:border-red-500"
               />
             </div>
-          </div>
+          </fieldset>
 
           <button
             type="submit"
@@ -230,6 +210,7 @@ const Form = ({ isOpen, onClose, initialData, item, onSaved }: FormProps) => {
           </button>
           <button
             type="button"
+            disabled={saving}
             onClick={onClose}
             className="bg-red-600 md:bg-transparent md:hover:bg-red-600 text-white font-bold py-2 rounded-md transition"
           >

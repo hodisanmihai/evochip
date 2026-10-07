@@ -3,41 +3,29 @@
 import { ArrowRight } from "lucide-react";
 import NextImage from "next/image";
 import PlaceHolder from "../../../public/resources/LOGO-EVOCHIP.png";
-import { ProjectProps } from "@/lib/supabase/services/landingTypes";
+import type { Project } from "@/lib/types/project";
 import { useState } from "react";
 import Link from "next/link";
+import { projectSlug } from "@/lib/projects/slug";
 
-const CarCard = ({ project }: { project: ProjectProps }) => {
+const CarCard = ({ project }: { project: Project }) => {
   const [imgError, setImgError] = useState(false);
 
   const carModel = project.car_models;
   if (!carModel) return null;
 
-  const brandData = Array.isArray(carModel.car_brands)
-    ? carModel.car_brands[0]
-    : carModel.car_brands;
+  const brandData = carModel.car_brands;
   const brandName = brandData?.car_brand || "Unknown";
   const modelName = carModel.car_model || "Unknown";
-  const engine_code = project.engine_code || "Unknown"; // Adaugat
 
-  const stageLabel = project.stage?.[0]?.solution_name ?? "STAGE 1";
+  const stageLabel = project.stage?.solution_name ?? "Stage nespecificat";
   const oldPower = project.initial_power || 0;
   const newPower = project.new_power || 0;
 
   const imageSrc =
     !imgError && project.image_url ? project.image_url : PlaceHolder;
 
-  const slugify = (text: string) =>
-    text
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
-
-  const slug = `${slugify(brandName)}-${slugify(modelName)}-${slugify(
-    String(engine_code)
-  )}-${slugify(String(newPower))}-hp-${slugify(stageLabel)}-${
-    project.id
-  }-evochip`;
+  const slug = projectSlug(project);
 
   return (
     <Link href={`/proiecte/${slug}`}>
@@ -87,12 +75,11 @@ const CarCard = ({ project }: { project: ProjectProps }) => {
               {stageLabel}
             </div>
 
-            <Link
-              href={`/proiecte/${slug}`}
+            <span
               className="relative z-1 bg-zinc-200 text-primary font-bold uppercase text-[11px] md:text-[14px] py-1 px-4 md:py-2 md:px-8 rounded-full shadow-md hover:bg-white transition-colors tracking-wider text-center"
             >
               Detalii
-            </Link>
+            </span>
           </div>
         </div>
       </div>

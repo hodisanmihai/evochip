@@ -18,13 +18,13 @@ export default function ProiecteLayout({ children }: { children: ReactNode }) {
           <aside
             className={`
            bg-[#222222] md:bg-black md:border-r md:border-primary/10
-            fixed top-0 left-0 z-10 min-h-screen w-64  
+            fixed top-0 left-0 z-10 min-h-screen w-64
             p-6 space-y-4 overflow-y-auto
             overflow-x-hidden
             atransform transition-transform duration-300 ease-in-out
             ${sidebarOpen ? "translate-x-0" : "translate-x-[-85%]"}
             md:relative md:translate-x-0 md:flex md:flex-col md:h-full
-            clip-mobile 
+            clip-mobile
           `}
           >
             <CarDropDown />

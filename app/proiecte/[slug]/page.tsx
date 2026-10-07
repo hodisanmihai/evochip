@@ -1,66 +1,79 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { normalizeMods, safeWebUrl } from "@/lib/data/validation";
+
+import { useEffect, useState, useCallback } from "react";
 import { ArrowLeft, ArrowRight, Play, FileText } from "lucide-react";
 import Link from "next/link";
 import NextImage from "next/image";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ProjectItem } from "../types";
+import { normalizeProject, PROJECT_SELECT } from "@/lib/types/project";
+import type { Project, ProjectResponse } from "@/lib/types/project";
+
+import { useProjectRefresh } from "@/lib/projects/useProjectRefresh";
 
 const Page = () => {
   const params = useParams();
   const slug = params.slug as string;
   const projectId = slug.split("-").slice(-2)[0];
 
-  const [project, setProject] = useState<ProjectItem | null>(null);
+  const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
+  const refresh = useCallback(() => setRevision((value) => value + 1), []);
+  useProjectRefresh(refresh);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchProject = async () => {
-      const supabase = createClient();
-
-      const { data, error } = await supabase
-        .from("projects")
-        .select(
-          `
-          *,
-          stage (id, solution_name),
-          car_models (
-            id,
-            car_model,
-            car_brand,
-            car_brands (id, car_brand)
-          )
-        `
-        )
-        .eq("id", projectId)
-        .single();
-
-      if (error || !data) {
-        console.error("Error:", error);
-        setLoading(false);
-        return;
+      setLoading(true);
+      setError(null);
+      try {
+        if (!projectId || !/^\d+$/.test(projectId)) {
+          setProject(null);
+          return;
+        }
+        const { data, error } = await createClient()
+          .from("projects")
+          .select(PROJECT_SELECT)
+          .eq("id", projectId)
+          .abortSignal(controller.signal)
+          .returns<ProjectResponse[]>()
+          .maybeSingle();
+        if (controller.signal.aborted) return;
+        if (error) throw error;
+        setProject(data ? normalizeProject(data) : null);
+      } catch {
+        if (!controller.signal.aborted) setError("Nu am putut încărca proiectul. Încearcă din nou.");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
-
-      setProject(data as ProjectItem);
-      setLoading(false);
     };
-
-    fetchProject();
-  }, [projectId]);
+    void fetchProject();
+    return () => controller.abort();
+  }, [projectId, revision]);
 
   if (loading) return <div className="text-zinc-400 p-8">Se încarcă...</div>;
-  if (!project)
-    return <div className="text-zinc-400 p-8">Proiectul nu a fost găsit</div>;
+  if (error) return (
+    <div role="alert" className="p-8 text-zinc-300">
+      <p>{error}</p>
+      <button type="button" onClick={refresh} className="mt-4 rounded bg-primary px-4 py-2 text-white">Reîncearcă</button>
+    </div>
+  );
+  if (!project) return (
+    <div className="p-8 text-zinc-400">
+      <p>Proiectul nu a fost găsit.</p>
+      <Link href="/proiecte" className="mt-4 inline-block text-white underline">Vezi proiectele disponibile</Link>
+    </div>
+  );
 
   const carModel = project.car_models;
-  const brandData = Array.isArray(carModel?.car_brands)
-    ? carModel?.car_brands[0]
-    : carModel?.car_brands;
+  const brandData = carModel?.car_brands;
   const brandName = brandData?.car_brand || "Unknown";
   const modelName = carModel?.car_model || "Unknown";
-  const stageLabel = project.stage?.solution_name ?? "STAGE 1";
+  const stageLabel = project.stage?.solution_name ?? "Stage nespecificat";
   const combustion = project.combustion;
   const engineCode = project.engine_code;
   const engineCapacity = project.engine_capacity;
@@ -71,19 +84,10 @@ const Page = () => {
   const transmision = project.transmition;
   const modList = project.mods;
   const note = project.note;
-  const dynoFile = project.dyno_file_url;
-  const videoLink = project.video_url;
+  const dynoFile = safeWebUrl(project.dyno_file_url);
+  const videoLink = safeWebUrl(project.video_url);
 
-  const modArray = (() => {
-    if (!modList) return [];
-    if (Array.isArray(modList)) return modList;
-    try {
-      const parsed = JSON.parse(modList as string);
-      return Array.isArray(parsed) ? parsed : [modList];
-    } catch {
-      return [modList];
-    }
-  })();
+  const modArray = normalizeMods(modList);
   return (
     <div className="min-h-full px-4 md:px-8 py-4">
       <Link href="/proiecte">
@@ -182,7 +186,7 @@ const Page = () => {
                 href={dynoFile}
                 target="_blank"
                 rel="noopener noreferrer"
-                className=" hidden flex-1  items-center justify-center gap-2 bg-zinc-200 hover:bg-white text-primary text-sm font-bold uppercase tracking-wider py-3 px-4 rounded-full transition"
+                className="flex flex-1 items-center justify-center gap-2 bg-zinc-200 hover:bg-white text-primary text-sm font-bold uppercase tracking-wider py-3 px-4 rounded-full transition"
               >
                 <FileText size={16} />
                 Fișă Dyno

@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import { messengerUrl, phoneDigits } from "@/lib/data/validation";
+
 import {
   FaTiktok,
   FaInstagram,
@@ -16,21 +17,11 @@ type ContactProps = {
 };
 
 const Contact = ({ contact }: ContactProps) => {
-  const getMessengerLink = (facebookUrl?: string) => {
-    if (!facebookUrl) return "#";
-
-    const username = facebookUrl
-      .replace("https://www.facebook.com/", "")
-      .replace("https://facebook.com/", "")
-      .replace("/", "");
-
-    return `https://m.me/${username}`;
-  };
   const phone = contact.telefon;
-  const phoneLink = `tel:+${contact.telefon}`;
-  const whatsappLink = `https://wa.me/+${contact.telefon}`;
+  const phoneLink = `tel:+${phoneDigits(contact.telefon)}`;
+  const whatsappLink = `https://wa.me/${phoneDigits(contact.telefon)}`;
   const instagram = contact.instagram_url;
-  const messenger = getMessengerLink(contact?.facebook_url);
+  const messenger = messengerUrl(contact?.facebook_url);
   const facebook = contact.facebook_url;
   const tiktok = contact.tiktok_url;
   const email = contact.email;
@@ -87,8 +78,8 @@ const Contact = ({ contact }: ContactProps) => {
           <a
             key={c.id}
             href={c.href}
-            target={c.href}
-            rel={c.href}
+            target="_blank"
+            rel="noopener noreferrer"
             className="block group"
           >
             <div

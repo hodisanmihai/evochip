@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useCallback, useState, useEffect, useMemo, useRef } from "react";
+import { notifyProjectsChanged, useProjectRefresh } from "@/lib/projects/useProjectRefresh";
+import { allRows } from "@/lib/supabase/services/readAll";
 import { createClient } from "@/lib/supabase/client";
+import type { CarModel } from "@/lib/types/project";
 
-interface CarModel {
-  id: number;
-  car_model: string;
-  car_brand: number;
-}
+type CarModelOption = Pick<CarModel, "id" | "car_model" | "car_brand">;
 
 interface ModelsAutocompleteProps {
   brandId: number | null;
@@ -21,24 +20,36 @@ const ModelsAutocomplete = ({
   onChange,
 }: ModelsAutocompleteProps) => {
   const [query, setQuery] = useState("");
-  const [models, setModels] = useState<CarModel[]>([]);
+  const [models, setModels] = useState<CarModelOption[]>([]);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [revision, setRevision] = useState(0);
+  const refresh = useCallback(() => setRevision((value) => value + 1), []);
+  useProjectRefresh(refresh);
+
   useEffect(() => {
+    const controller = new AbortController();
     const fetchModels = async () => {
+      setError(null);
       const supabase = createClient();
 
-      const { data } = await supabase
+      const { data, error: readError } = await allRows((from, to) => supabase
         .from("car_models")
         .select("id, car_model, car_brand")
-        .order("car_model", { ascending: true });
+        .order("car_model", { ascending: true })
+        .order("id", { ascending: true }).abortSignal(controller.signal).range(from, to));
+      if (controller.signal.aborted) return;
+      if (readError) { setError("Nu am putut încărca opțiunile."); return; }
 
       setModels(data || []);
     };
 
     fetchModels();
-  }, []);
+    return () => controller.abort();
+  }, [revision]);
 
   // filter by brand + search
   const filtered = useMemo(() => {
@@ -73,7 +84,7 @@ const ModelsAutocomplete = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (model: CarModel) => {
+  const handleSelect = (model: CarModelOption) => {
     onChange(model.id, model.car_model);
     setIsOpen(false);
     setQuery("");
@@ -145,24 +156,35 @@ const ModelsAutocomplete = ({
             </div>
           ))}
           {/* CREATE NEW */}
-          {query.length > 0 && (
+          {query.trim().length > 0 && !models.some((model) => model.car_brand === brandId && model.car_model.toLowerCase() === query.trim().toLowerCase()) && (
             <div
               onMouseDown={async () => {
-                const newModel = await createModel(query);
-                if (newModel) {
+                if (creating) return;
+                setCreating(true);
+                setError(null);
+                try {
+                  const newModel = await createModel(query.trim());
+                  if (!newModel) throw new Error("Modelul nu a putut fi creat.");
                   onChange(newModel.id, newModel.car_model);
+                  setModels((prev) => [...prev, newModel]);
+                  setQuery("");
+                  setIsOpen(false);
+                  notifyProjectsChanged();
+                } catch {
+                  setError("Modelul nu a putut fi creat. Încearcă din nou.");
+                } finally {
+                  setCreating(false);
                 }
-                setQuery(newModel.car_model);
-                setIsOpen(false);
               }}
               className="px-3 py-2 text-sm text-green-400 hover:bg-zinc-700 cursor-pointer transition-colors flex items-center gap-2 border-t border-zinc-700"
             >
               <span className="text-lg font-bold leading-none">+</span>
-              <span>Adaugă {query}</span>
+              <span>{creating ? "Se creează..." : `Adaugă ${query}`}</span>
             </div>
           )}
         </div>
       )}
+      {error && <p role="alert" className="mt-2 text-xs text-red-400">{error} <button type="button" onClick={refresh} className="underline">Reîncearcă</button></p>}
     </div>
   );
 };

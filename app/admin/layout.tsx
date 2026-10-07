@@ -1,11 +1,12 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { NotificationProvider } from "./context/NotificationContext";
+import { retryProjectCleanup } from "@/lib/supabase/services/projectStorage";
 
 const navLinks = [
   { href: "/admin/", label: "Dashboard" },
@@ -15,6 +16,10 @@ const navLinks = [
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  useEffect(() => {
+    if (pathname !== "/admin/login") void retryProjectCleanup();
+  }, [pathname]);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
@@ -48,7 +53,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
         <aside
           className={`
-            fixed inset-y-0 left-0 z-40 w-64 bg-black border-r border-zinc-800 p-6 space-y-4 transform 
+            fixed inset-y-0 left-0 z-40 w-64 bg-black border-r border-zinc-800 p-6 space-y-4 transform
             transition-transform duration-300 ease-in-out overflow-y-auto
             md:relative md:transform-none md:flex md:flex-col md:h-full md:shrink-0
             ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}

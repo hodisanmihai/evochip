@@ -4,9 +4,11 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import data from "../data/continut.json";
 
 import CarCard from "../proiecte/components/CarCard";
-import { ProjectProps } from "@/lib/supabase/services/landingTypes";
+import type { Project } from "@/lib/types/project";
 type LatestProjectsProp = {
-  projects: ProjectProps[];
+  projects: Project[];
+  error: boolean;
+  onRetry: () => void;
 };
 import Link from "next/link";
 
@@ -16,7 +18,7 @@ const CONTAINER_PADDING_DESKTOP = 64;
 const CONTAINER_PADDING_MOBILE = 32;
 const AUTOPLAY_DELAY = 10000;
 
-const LatestProjects = ({ projects }: LatestProjectsProp) => {
+const LatestProjects = ({ projects, error, onRetry }: LatestProjectsProp) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [cardsPerPage, setCardsPerPage] = useState(4);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -56,6 +58,7 @@ const LatestProjects = ({ projects }: LatestProjectsProp) => {
   }, [updateCardsPerPage]);
 
   const totalPages = Math.ceil(projectsShowcase.length / cardsPerPage);
+  const visiblePage = Math.min(currentPage, Math.max(0, totalPages - 1));
 
   const goToPage = useCallback(
     (page: number) => {
@@ -92,14 +95,15 @@ const LatestProjects = ({ projects }: LatestProjectsProp) => {
 
     if (absDeltaX < SWIPE_THRESHOLD || absDeltaX < absDeltaY) return;
 
-    if (deltaX < 0 && currentPage < totalPages - 1) {
-      goToPage(currentPage + 1);
-    } else if (deltaX > 0 && currentPage > 0) {
-      goToPage(currentPage - 1);
+    if (deltaX < 0 && visiblePage < totalPages - 1) {
+      goToPage(visiblePage + 1);
+    } else if (deltaX > 0 && visiblePage > 0) {
+      goToPage(visiblePage - 1);
     }
   };
 
   useEffect(() => {
+    if (totalPages < 2) return;
     timerRef.current = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
     }, AUTOPLAY_DELAY);
@@ -108,7 +112,7 @@ const LatestProjects = ({ projects }: LatestProjectsProp) => {
     };
   }, [totalPages]);
 
-  const start = currentPage * cardsPerPage;
+  const start = visiblePage * cardsPerPage;
   const visibleProjects = projectsShowcase.slice(start, start + cardsPerPage);
 
   return (
@@ -138,7 +142,13 @@ const LatestProjects = ({ projects }: LatestProjectsProp) => {
             {/* Grid carduri — 2 coloane pe mobil, flex pe desktop */}
             <div className="w-full overflow-visible h-full flex justify-center md:justify-center-safe">
               <div className="w-[90%] grid md:grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-6 md:justify-center md:items-center">
-                {visibleProjects.map((projectItem, i) => (
+                {error ? (
+                  <div role="alert" className="py-8 text-center">
+                    <p>Nu am putut încărca proiectele.</p>
+                    <button type="button" onClick={onRetry} className="mt-3 underline">Reîncearcă</button>
+                  </div>
+                ) : projects.length === 0 ? <p className="py-8 text-zinc-400">Nu există încă proiecte publicate.</p> : null}
+                {!error && visibleProjects.map((projectItem, i) => (
                   <div key={i}>
                     <CarCard project={projectItem} />
                   </div>
@@ -159,7 +169,7 @@ const LatestProjects = ({ projects }: LatestProjectsProp) => {
                     }}
                     aria-label={`Pagina ${i + 1}`}
                     className={`w-5 h-5 md:w-6 md:h-6 rounded-full border-2 border-thirdcolor transition-colors duration-200 cursor-pointer pointer-events-auto ${
-                      i === currentPage
+                      i === visiblePage
                         ? "bg-primary scale-125"
                         : "bg-transparent"
                     }`}

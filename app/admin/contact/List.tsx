@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { messengerUrl } from "@/lib/data/validation";
+import { allRows } from "@/lib/supabase/services/readAll";
+
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
 // Interfața actualizată pentru obiectul de Contact
@@ -18,48 +21,48 @@ interface ListProps {
   selectedItem: ContactItem | null;
   onSelectItem: (item: ContactItem | null) => void;
   refreshKey?: number;
+  onEmptyChange: (empty: boolean) => void;
 }
 
-const List = ({ selectedItem, onSelectItem, refreshKey }: ListProps) => {
+const List = ({ selectedItem, onSelectItem, refreshKey, onEmptyChange }: ListProps) => {
   const [items, setItems] = useState<ContactItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchContactData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const { data, error: supabaseError } = await supabase
+        const { data, error: supabaseError } = await allRows((from, to) => supabase
           .from("contact")
           .select("*")
-          .order("id", { ascending: true });
+          .order("id", { ascending: true }).abortSignal(controller.signal).range(from, to));
 
+        if (controller.signal.aborted) return;
         if (supabaseError) {
-          setError(supabaseError.message);
+          setError(supabaseError.message ?? "Nu am putut încărca datele.");
         } else {
+          if (controller.signal.aborted) return;
           setItems(data || []);
+          onEmptyChange(!data?.length);
         }
       } catch (err) {
+        if (controller.signal.aborted) return;
         if (err instanceof Error) {
           setError(err.message);
         } else {
           setError("A apărut o eroare necunoscută.");
         }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchContactData();
-  }, [refreshKey]);
-
-  // Funcție ajutătoare pentru generarea link-ului de Messenger din cel de Facebook
-  const getMessengerLink = (facebookUrl: string) => {
-    if (!facebookUrl) return "";
-    return facebookUrl
-      .replace("://facebook.com", "m.me")
-      .replace("facebook.com", "m.me")
-      .replace("://facebook.com", "m.me");
-  };
+    return () => controller.abort();
+  }, [refreshKey, onEmptyChange]);
 
   if (loading)
     return <div className="text-white p-4">Se încarcă datele...</div>;
@@ -76,7 +79,7 @@ const List = ({ selectedItem, onSelectItem, refreshKey }: ListProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items.map((item) => {
           const isSelected = selectedItem?.id === item.id;
-          const messengerLink = getMessengerLink(item.facebook_url);
+          const messengerLink = messengerUrl(item.facebook_url);
 
           return (
             <div

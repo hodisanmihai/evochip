@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import { messengerUrl } from "@/lib/data/validation";
+
+import { useContact } from "@/lib/data/useContact";
+
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   FaBars,
@@ -12,51 +16,22 @@ import {
 } from "react-icons/fa";
 import gsap from "gsap";
 import evoChipLogo from "../../../public/resources/LOGO-EVOCHIP.png";
-import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
-type Contact = {
-  facebook_url?: string;
-  instagram_url?: string;
-  tiktok_url?: string;
-};
-
 const NavBarProiecte = () => {
-  const [contact, setContact] = useState<Contact | null>(null);
+  const { contact } = useContact();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const linksRef = useRef<HTMLAnchorElement[]>([]);
 
-  useEffect(() => {
-    const fetchContact = async () => {
-      const supabase = createClient();
-
-      const { data } = await supabase.from("contact").select("*").single();
-
-      setContact(data);
-    };
-
-    fetchContact();
-  }, []);
-
-  const getMessengerLink = (facebookUrl?: string) => {
-    if (!facebookUrl) return "#";
-
-    const username = facebookUrl
-      .replace("https://www.facebook.com/", "")
-      .replace("https://facebook.com/", "")
-      .replace("/", "");
-
-    return `https://m.me/${username}`;
-  };
 
   const links = [
-    { label: "Acasă", href: "../" },
-    { label: "Servicii", href: "../#showcase4" },
-    { label: "Proiecte", href: "../proiecte" },
-    { label: "Preturi", href: "../#prices" },
+    { label: "Acasă", href: "/" },
+    { label: "Servicii", href: "/#showcase4" },
+    { label: "Proiecte", href: "/proiecte" },
+    { label: "Preturi", href: "/#prices" },
     { label: "Contact", href: "#contact" },
   ];
 
@@ -78,7 +53,7 @@ const NavBarProiecte = () => {
     },
     {
       id: "messenger",
-      href: getMessengerLink(contact?.facebook_url),
+      href: messengerUrl(contact?.facebook_url),
       icon: <FaFacebookMessenger className="w-4 h-4" />,
     },
   ];
@@ -131,7 +106,7 @@ const NavBarProiecte = () => {
   return (
     <header className="fixed inset-x-0 top-0 z-50 overscroll-none">
       <div className="mx-auto flex items-center justify-between w-full px-4 py-4 md:px-8 bg-black/80 backdrop-blur-xl border-b border-primary/10">
-        <Link href="../" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="relative w-10 h-10 md:w-16 md:h-16">
             <Image
               src={evoChipLogo}
@@ -170,6 +145,7 @@ const NavBarProiecte = () => {
                 <Link
                   key={link.label}
                   href={link.href}
+                    onClick={() => setMenuOpen(false)}
                   ref={(el) => {
                     if (el) linksRef.current[index] = el;
                   }}

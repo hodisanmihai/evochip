@@ -62,18 +62,18 @@ const Background = ({ isVisible }: { isVisible: boolean }) => {
       {!isMobileDevice ? (
         <Canvas
           className="w-full h-full"
-          dpr={isMobileDevice ? [1, 1.2] : [1, 1.5]}
+          dpr={[1, 1.5]}
           gl={{ powerPreference: "high-performance" }}
         >
           <ambientLight intensity={5} />
           <directionalLight
             position={[0, 2, 2]}
-            intensity={isMobileDevice ? 10 : 5}
+            intensity={5}
           />
 
           <PerspectiveCamera makeDefault fov={45} />
 
-          <CameraScrollController isMobile={isMobileDevice} />
+          <CameraScrollController />
 
           <ContenitorMasina isVisible={isVisible} />
         </Canvas>
@@ -86,17 +86,11 @@ export default Background;
 
 /* ================= CAMERA ================= */
 
-function CameraScrollController({ isMobile }: { isMobile: boolean }) {
+function CameraScrollController() {
   const { camera } = useThree();
   const lookAt = useRef({ x: 0, y: 0.2, z: 0 });
 
   useEffect(() => {
-    if (isMobile) {
-      gsap.set(camera.position, { x: 1, y: 1.2, z: 8 });
-      gsap.set(lookAt.current, { x: 8, y: 2, z: -12.5 });
-      return;
-    }
-
     gsap.set(camera.position, { x: 0, y: 1.5, z: 8 });
     gsap.set(lookAt.current, { x: 0, y: 0.2, z: 0 });
 
@@ -151,7 +145,7 @@ function CameraScrollController({ isMobile }: { isMobile: boolean }) {
         tl.kill();
       }
     };
-  }, [camera, isMobile]);
+  }, [camera]);
 
   useFrame(() => {
     camera.lookAt(lookAt.current.x, lookAt.current.y, lookAt.current.z);

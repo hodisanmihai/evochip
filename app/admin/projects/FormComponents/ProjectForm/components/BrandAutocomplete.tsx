@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useCallback, useState, useEffect, useMemo, useRef } from "react";
+import { notifyProjectsChanged, useProjectRefresh } from "@/lib/projects/useProjectRefresh";
+import { allRows } from "@/lib/supabase/services/readAll";
 import { createClient } from "@/lib/supabase/client";
 import { CarBrand } from "../../../types";
 
 interface BrandAutocompleteProps {
   value: number | null;
   onChange: (brandId: number, brandName: string) => void;
-  onCreated?: (brand: CarBrand) => void;
 }
 
 const BrandAutocomplete = ({
   value,
   onChange,
-  onCreated,
 }: BrandAutocompleteProps) => {
   const [query, setQuery] = useState("");
   const [brands, setBrands] = useState<CarBrand[]>([]);
@@ -23,23 +23,35 @@ const BrandAutocomplete = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Load brands on mount
+  const [error, setError] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
+  const refresh = useCallback(() => setRevision((value) => value + 1), []);
+  useProjectRefresh(refresh);
+
   useEffect(() => {
+    const controller = new AbortController();
     const fetchBrands = async () => {
+      setError(null);
+      setLoading(true);
       try {
         const supabase = createClient();
-        const { data } = await supabase
+        const { data, error: readError } = await allRows((from, to) => supabase
           .from("car_brands")
           .select("id, car_brand")
-          .order("car_brand", { ascending: true });
+          .order("car_brand", { ascending: true })
+        .order("id", { ascending: true }).abortSignal(controller.signal).range(from, to));
+      if (controller.signal.aborted) return;
+      if (readError) { setError("Nu am putut încărca opțiunile."); setLoading(false); return; }
         setBrands(data || []);
       } catch (error) {
         console.error("Error fetching brands:", error);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
     fetchBrands();
-  }, []);
+    return () => controller.abort();
+  }, [revision]);
 
   const selectedLabel = useMemo(() => {
     if (!value) return "";
@@ -79,7 +91,7 @@ const BrandAutocomplete = ({
   };
 
   const handleCreate = async () => {
-    if (!query.trim()) return;
+    if (creating || loading || error || !query.trim()) return;
     setCreating(true);
     try {
       const supabase = createClient();
@@ -89,15 +101,17 @@ const BrandAutocomplete = ({
         .select()
         .single();
 
-      if (!error && data) {
+      if (error) throw error;
+      if (data) {
         setBrands((prev) =>
           [...prev, data].sort((a, b) => a.car_brand.localeCompare(b.car_brand))
         );
         handleSelect(data);
-        onCreated?.(data);
+        notifyProjectsChanged();
       }
     } catch (error) {
       console.error("Error creating brand:", error);
+      setError("Brandul nu a putut fi creat. Încearcă din nou.");
     } finally {
       setCreating(false);
     }
@@ -174,7 +188,7 @@ const BrandAutocomplete = ({
             ))}
 
           {/* Create new option */}
-          {!loading && query.trim() && !exactMatch && (
+          {!error && !loading && query.trim() && !exactMatch && (
             <div
               onMouseDown={handleCreate}
               className="px-3 py-2 text-sm text-green-400 hover:bg-zinc-700 cursor-pointer transition-colors flex items-center gap-2 border-t border-zinc-700"
@@ -187,6 +201,7 @@ const BrandAutocomplete = ({
           )}
         </div>
       )}
+      {error && <p role="alert" className="text-xs text-red-400">{error} <button type="button" onClick={refresh} className="underline">Reîncearcă</button></p>}
     </div>
   );
 };

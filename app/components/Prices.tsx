@@ -1,15 +1,21 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import { phoneDigits } from "@/lib/data/validation";
+
+import SafeRichText from "@/app/components/SafeRichText";
+
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { PriceProp, ContactProp } from "@/lib/supabase/services/landingTypes";
 
 type PricesProps = {
   prices: PriceProp[];
+  error: boolean;
+  onRetry: () => void;
   contact: ContactProp;
 };
 
-const Prices = ({ prices, contact }: PricesProps) => {
+const Prices = ({ prices, contact, error, onRetry }: PricesProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -113,6 +119,7 @@ const Prices = ({ prices, contact }: PricesProps) => {
             isDragging ? "cursor-grabbing" : "cursor-grab"
           }`}
         >
+          {error ? <div role="alert"><p>Prețurile nu sunt disponibile momentan.</p><button type="button" onClick={onRetry} className="underline">Reîncearcă</button></div> : prices.length === 0 ? <p>Nu există prețuri disponibile momentan.</p> : null}
           {prices.map((stage) => {
             const benefits = [
               stage.text_1,
@@ -130,6 +137,7 @@ const Prices = ({ prices, contact }: PricesProps) => {
                 <CardPrices
                   title={stage.title}
                   price={stage.price}
+                  description={stage.description ?? ""}
                   benefits={benefits}
                   contact={contact}
                 />
@@ -147,11 +155,13 @@ export default Prices;
 const CardPrices = ({
   title,
   price,
+  description,
   benefits,
   contact,
 }: {
   title: string;
   price: string;
+  description: string;
   benefits: string[];
   contact: ContactProp;
 }) => {
@@ -190,7 +200,7 @@ const CardPrices = ({
 
           {/* Descriere Scurta */}
           <p className="text-center text-base sm:text-lg md:text-xl font-semibold my-4 px-2">
-            Performanță pentru condusul zilnic
+            {description}
           </p>
 
           {/* PREȚURI */}
@@ -214,19 +224,19 @@ const CardPrices = ({
           <ul className="space-y-2 p-2 sm:p-4 text-sm sm:text-base md:text-lg font-medium text-black my-2">
             {benefits.map((benefit, index) => (
               <li key={index} className="flex items-start gap-2">
-                <span dangerouslySetInnerHTML={{ __html: benefit }} />
+                <SafeRichText text={benefit} />
               </li>
             ))}
           </ul>
         </div>
 
         {/* CTA CENTRAT */}
-        <a
-          href={`tel:+${contact.telefon}`}
+        {contact.telefon && <a
+          href={`tel:+${phoneDigits(contact.telefon)}`}
           className="block w-full sm:w-fit mx-auto mt-4 bg-primary text-thirdcolor font-black px-6 py-3 rounded-full text-center hover:scale-105 transition-transform text-sm sm:text-base whitespace-nowrap"
         >
           Sună pentru o programare
-        </a>
+        </a>}
       </div>
     </div>
   );

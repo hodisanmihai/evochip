@@ -1,59 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
-import {
-  FaTiktok,
-  FaInstagram,
-  FaFacebook,
-  FaFacebookMessenger,
-} from "react-icons/fa";
-import { createClient } from "@/lib/supabase/client";
+import { messengerUrl, phoneDigits } from "@/lib/data/validation";
+
+import { useContact } from "@/lib/data/useContact";
+
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaTiktok, FaInstagram, FaFacebook, FaFacebookMessenger } from "react-icons/fa";
+
 import Link from "next/link";
 
-type Contact = {
-  email?: string;
-  telefon?: string;
-  facebook_url?: string;
-  instagram_url?: string;
-  tiktok_url?: string;
-};
-
 const FooterProiecte = () => {
-  const [contact, setContact] = useState<Contact | null>(null);
+  const { contact, error: contactError, refresh: refreshContact } = useContact();
 
-  useEffect(() => {
-    const fetchContact = async () => {
-      const supabase = createClient();
-
-      const { data } = await supabase.from("contact").select("*").single();
-
-      setContact(data);
-    };
-
-    fetchContact();
-  }, []);
-
-  const getMessengerLink = (facebookUrl?: string) => {
-    if (!facebookUrl) return "#";
-
-    const username = facebookUrl
-      .replace("https://www.facebook.com/", "")
-      .replace("https://facebook.com/", "")
-      .replace("/", "");
-
-    return `https://m.me/${username}`;
-  };
   const currentYear = new Date().getFullYear();
 
-  const phone = `+${contact?.telefon}`;
+  const phone = `+${phoneDigits(contact?.telefon)}`;
   const email = contact?.email;
   const address = "Oradea, Romania";
 
   const instagram = contact?.instagram_url;
   const facebook = contact?.facebook_url;
   const tiktok = contact?.tiktok_url;
-  const messenger = getMessengerLink(contact?.facebook_url);
+  const messenger = messengerUrl(contact?.facebook_url);
 
   const links = [
     { label: "Acasă", href: "../" },
@@ -62,6 +29,8 @@ const FooterProiecte = () => {
     { label: "Preturi", href: "../#prices" },
     { label: "Contact", href: "#contact" },
   ];
+
+  if (!contact) return <footer className="p-8 text-zinc-400">Datele de contact nu sunt disponibile.{contactError && <button type="button" onClick={refreshContact} className="ml-3 underline">Reîncearcă</button>}</footer>;
 
   return (
     <footer className="w-full bg-linear-to-t from-black via-zinc-950 to-black border-t border-red-500/20 backdrop-blur-xl z-2">

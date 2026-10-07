@@ -4,10 +4,12 @@ const FormActions = ({
   saving,
   disabled,
   onClose,
+  closeDisabled = false,
 }: {
   saving: boolean;
   disabled: boolean;
   onClose: () => void;
+  closeDisabled?: boolean;
 }) => (
   <div className="flex flex-col gap-2 mt-2">
     <button
@@ -20,6 +22,7 @@ const FormActions = ({
     <button
       type="button"
       onClick={onClose}
+      disabled={closeDisabled}
       className="bg-red-600 md:bg-transparent md:border md:border-red-600 md:hover:bg-red-600 text-white font-bold py-2 rounded-md transition"
     >
       Renunta

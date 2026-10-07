@@ -12,25 +12,34 @@ import Prices from "./Prices";
 import Contact from "./Contact";
 import Footer from "./Footer";
 import NavBar from "./NavBar";
-import type {
-  PriceProp,
-  ContactProp,
-  ProjectProps,
-} from "@/lib/supabase/services/landingTypes";
+import type { PriceProp, ContactProp } from "@/lib/supabase/services/landingTypes";
+
+import type { Project } from "@/lib/types/project";
+
+import { useRouter } from "next/navigation";
+import { useProjectRefresh } from "@/lib/projects/useProjectRefresh";
 
 type HomeClientProps = {
-  projects: ProjectProps[];
+  projects: Project[];
   prices: PriceProp[];
-  contact: ContactProp;
+  contact: ContactProp | null;
+  projectsError: boolean;
+  pricesError: boolean;
 };
 
 export default function HomeClient({
   projects,
+  projectsError,
+  pricesError,
 
   prices,
 
   contact,
 }: HomeClientProps) {
+  const router = useRouter();
+  const refresh = useCallback(() => router.refresh(), [router]);
+  useProjectRefresh(refresh);
+  const availableContact = contact ?? { telefon: "", email: "" };
   const [showIntro, setShowIntro] = useState(true);
   const [showHero, setShowHero] = useState(false);
 
@@ -43,7 +52,7 @@ export default function HomeClient({
   }, []);
 
   return (
-    <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center ">
+    <div className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center ">
       {showIntro && (
         <Intro onRevealHero={revealHero} onComplete={finishIntro} />
       )}
@@ -52,13 +61,18 @@ export default function HomeClient({
       {showHero && <ShowCase />}
       {showHero && <ServicesShowCase />}
 
-      {showHero && <LatestProjects projects={projects} />}
-      {showHero && <NavBar contact={contact} />}
-      {showHero && <Prices prices={prices} contact={contact} />}
-      {showHero && <Contact contact={contact} />}
-      {showHero && <Footer contact={contact} />}
+      {showHero && <LatestProjects projects={projects} error={projectsError} onRetry={refresh} />}
+      {showHero && <NavBar contact={availableContact} />}
+      {showHero && <Prices prices={prices} contact={availableContact} error={pricesError} onRetry={refresh} />}
+      {showHero && (contact ? <Contact contact={contact} /> : (
+        <section id="contact" className="relative z-10 p-8 text-center text-zinc-300">
+          <p>Datele de contact nu sunt disponibile momentan.</p>
+          <button type="button" onClick={refresh} className="mt-3 underline">Reîncearcă</button>
+        </section>
+      ))}
+      {showHero && contact && <Footer contact={contact} />}
 
       <Background isVisible={showHero} />
-    </main>
+    </div>
   );
 }

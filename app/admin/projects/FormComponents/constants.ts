@@ -18,8 +18,6 @@ export const inputClass =
 
 export const labelClass = "text-xs text-zinc-400 mb-1 block";
 
-export const BUCKET = "car-files";
-
 export const PROJECT_IMAGE_FOLDER = "car-photos";
 
 export const PROJECT_FILE_FOLDER = "car-dyno";

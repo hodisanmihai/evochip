@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CarModelItem } from "../types";
+import { CarBrandItem } from "../types";
 import FormActions from "./FormActions";
 import { inputClass, labelClass } from "./constants";
 
@@ -9,7 +9,7 @@ interface CarModelFields {
   car_brand: string;
 }
 
-const getCarModelState = (item?: CarModelItem | null): CarModelFields => ({
+const getCarModelState = (item?: CarBrandItem | null): CarModelFields => ({
   car_brand: item?.car_brand || "",
 });
 
@@ -18,7 +18,7 @@ const CarModelForm = ({
   onSave,
   onClose,
 }: {
-  item?: CarModelItem | null;
+  item?: CarBrandItem | null;
   onSave: (data: CarModelFields) => Promise<void>;
   onClose: () => void;
 }) => {

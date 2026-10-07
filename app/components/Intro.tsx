@@ -103,7 +103,7 @@ const Intro = ({
               __html: `
               svg path {
                 fill: transparent ;
-                stroke: #b05658 ; 
+                stroke: #b05658 ;
                 stroke-width: 4px ;
                 stroke-linecap: round ;
                 stroke-linejoin: round ;

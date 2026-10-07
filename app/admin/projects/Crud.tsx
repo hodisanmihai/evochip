@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Form from "./Form";
 import { EntityType, AnyItem } from "./types";
 import { useNotification } from "../context/NotificationContext";
+
+import { notifyProjectsChanged } from "@/lib/projects/useProjectRefresh";
+import { cleanupProjectFiles } from "@/lib/supabase/services/projectStorage";
 
 interface CrudProps {
   type: EntityType;
@@ -48,10 +51,17 @@ const Crud = ({
       const { error } = await supabase
         .from(tableName)
         .delete()
-        .eq("id", selectedItem.id);
+        .eq("id", selectedItem.id)
+        .select("id")
+        .single();
 
       if (error) throw error;
 
+      if (type === "projects" && "image_url" in selectedItem) {
+        const failed = await cleanupProjectFiles([selectedItem.image_url, selectedItem.dyno_file_url]);
+        if (failed) console.warn("Unele fișiere ale proiectului nu au putut fi curățate.");
+      }
+      notifyProjectsChanged();
       setSelectedItem(null);
       onRefresh();
       show("Elementul a fost șters cu succes.", "success");
@@ -106,7 +116,8 @@ const Crud = ({
         item={selectedItem}
         onSaved={() => {
           onRefresh();
-          setIsFormOpen(false);
+          setSelectedItem(null);
+          if (type !== "projects") setIsFormOpen(false);
         }}
       />
     </div>

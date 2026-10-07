@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { notifyProjectsChanged } from "@/lib/projects/useProjectRefresh";
+
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Form from "./Form";
 import { PriceItem } from "./page";
@@ -43,11 +45,12 @@ const Crud = ({ selectedItem, setSelectedItem, onRefresh }: CrudProps) => {
       const { error } = await supabase
         .from("prices")
         .delete()
-        .eq("id", selectedItem.id);
+        .eq("id", selectedItem.id).select("id").single();
 
       if (error) throw error;
 
       setSelectedItem(null);
+      notifyProjectsChanged();
       onRefresh();
       show("Prețul a fost șters cu succes.", "success");
     } catch (err: unknown) {
@@ -94,15 +97,17 @@ const Crud = ({ selectedItem, setSelectedItem, onRefresh }: CrudProps) => {
         {deleting ? "Se șterge..." : "Sterge"}
       </button>
 
-      <Form
-        isOpen={isFormOpen}
+      {isFormOpen && (
+        <Form
+        key={selectedItem?.id ?? "new"}
         onClose={() => setIsFormOpen(false)}
         item={selectedItem}
         onSaved={() => {
           onRefresh();
           setIsFormOpen(false);
         }}
-      />
+        />
+      )}
     </div>
   );
 };

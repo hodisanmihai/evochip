@@ -6,7 +6,6 @@ import evoChipLogo from "../public/resources/LOGO-EVOCHIP.png";
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-montserrat",
 });
 
 export const metadata: Metadata = {
