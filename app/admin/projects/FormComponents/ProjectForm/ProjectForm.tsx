@@ -47,7 +47,7 @@ const ProjectForm = ({
   const active = useRef(true);
   const saveInFlight = useRef(false);
   const draftFiles = useRef(new Set<string>());
-  const persistedFiles = useRef(new Set([...projectImages(item?.image_url, item?.image_urls), item?.dyno_file_url].filter((url): url is string => Boolean(url))));
+  const persistedFiles = useRef(new Set([...projectImages(item?.image_url, item?.image_urls), ...Object.values(item?.image_metadata ?? {}).map((photo) => photo.original), item?.dyno_file_url].filter((url): url is string => Boolean(url))));
   useEffect(() => {
     active.current = true;
     const drafts = draftFiles.current;
@@ -148,7 +148,7 @@ const ProjectForm = ({
     try {
       const saved = await onSave({ ...formData, mods });
       if (saved) {
-        const kept = new Set([...formData.image_urls, formData.dyno_file_url]);
+        const kept = new Set([...formData.image_urls, ...formData.image_urls.map((url) => formData.image_metadata?.[url]?.original).filter(Boolean), formData.dyno_file_url]);
         const obsolete = [...persistedFiles.current, ...draftFiles.current].filter((url) => !kept.has(url));
         draftFiles.current.clear();
         const cleanupError = await cleanupProjectFiles(obsolete);
@@ -421,6 +421,8 @@ const ProjectForm = ({
         onUploaded={trackUpload}
         onBusyChange={setImageBusy}
         onPendingChange={setImagePending}
+        metadata={formData.image_metadata ?? {}}
+        onMetadataChange={(image_metadata) => setFormData((prev) => ({ ...prev, image_metadata }))}
         value={formData.image_urls}
         onChange={(urls) => setFormData((prev) => ({ ...prev, image_urls: urls, image_url: urls[0] ?? "" }))}
       />

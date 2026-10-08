@@ -94,6 +94,7 @@ const Form = ({ type, isOpen, onClose, item, onSaved }: FormProps) => {
       stage: data.stage,
       image_url: images[0] ?? "",
       image_urls: images,
+      image_metadata: Object.fromEntries(images.map((url) => [url, data.image_metadata?.[url] ?? { original: url, description: "" }])),
       dyno_file_url: data.dyno_file_url,
       video_url: data.video_url,
     };
@@ -113,7 +114,9 @@ const Form = ({ type, isOpen, onClose, item, onSaved }: FormProps) => {
         error && typeof error === "object" && "message" in error
           ? String(error.message)
           : "Încearcă din nou.";
-      show(message.includes("image_urls")
+      show(message.includes("image_metadata")
+        ? "Editorul foto necesită migrarea 202610080001_project_image_metadata.sql în Supabase. Aplică migrarea și reîncearcă salvarea."
+        : message.includes("image_urls")
         ? "Galeria nu este încă activată în Supabase. Aplică migrarea pentru image_urls, apoi reîncearcă salvarea."
         : "Eroare la salvare: " + message, "error");
       return false;

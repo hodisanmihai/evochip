@@ -59,7 +59,7 @@ const Crud = ({
       if (error) throw error;
 
       if (type === "projects" && "image_url" in selectedItem) {
-        const failed = await cleanupProjectFiles([...projectImages(selectedItem.image_url, selectedItem.image_urls), selectedItem.dyno_file_url]);
+        const failed = await cleanupProjectFiles([...projectImages(selectedItem.image_url, selectedItem.image_urls), ...Object.values(selectedItem.image_metadata ?? {}).map((photo) => photo.original), selectedItem.dyno_file_url]);
         if (failed) console.warn("Unele fișiere ale proiectului nu au putut fi curățate.");
       }
       notifyProjectsChanged();

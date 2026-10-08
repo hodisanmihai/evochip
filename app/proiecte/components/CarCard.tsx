@@ -39,7 +39,7 @@ const CarCard = ({ project }: { project: Project }) => {
             alt={`${brandName} ${modelName}`}
             width={310}
             height={190}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain bg-zinc-900"
             onError={() => setImgError(true)}
           />
         </div>
@@ -75,9 +75,7 @@ const CarCard = ({ project }: { project: Project }) => {
               {stageLabel}
             </div>
 
-            <span
-              className="relative z-1 bg-zinc-200 text-primary font-bold uppercase text-[11px] md:text-[14px] py-1 px-4 md:py-2 md:px-8 rounded-full shadow-md hover:bg-white transition-colors tracking-wider text-center"
-            >
+            <span className="relative z-1 bg-zinc-200 text-primary font-bold uppercase text-[11px] md:text-[14px] py-1 px-4 md:py-2 md:px-8 rounded-full shadow-md hover:bg-white transition-colors tracking-wider text-center">
               Detalii
             </span>
           </div>

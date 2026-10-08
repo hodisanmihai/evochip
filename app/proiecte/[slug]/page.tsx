@@ -96,7 +96,7 @@ const Page = () => {
       </Link>
       <div className="w-full flex flex-col lg:flex-row gap-6 py-4">
         <div className="w-full lg:w-1/2 flex flex-col justify-start items-start uppercase">
-          <ProjectGallery images={projectImages(project.image_url, project.image_urls)} title={`${brandName} ${modelName}`} />
+          <ProjectGallery metadata={project.image_metadata} images={projectImages(project.image_url, project.image_urls)} title={`${brandName} ${modelName}`} />
           <div className="relative w-full border-t-2 border-zinc-200/90 flex items-center justify-between p-2 px-3 mt-2">
             <div
               className="absolute left-0 top-0 bottom-0 bg-thirdcolor"

@@ -1,3 +1,5 @@
+import { readAll } from "./readAll";
+import { ImageMetadata } from "@/lib/types/project";
 import { createClient } from "../client";
 import { cleanupUnreferencedFiles, projectStoragePath } from "@/lib/projects/storage";
 
@@ -42,6 +44,11 @@ export async function cleanupProjectFiles(urls: string[]): Promise<boolean> {
     const { data, error } = await supabase.from("projects").select("id").contains("image_urls", [url]).limit(1);
     if (error) throw error;
     if (data?.length) {
+      updatePending([], [url]);
+      return true;
+    }
+    const rows = await readAll<{ image_metadata: ImageMetadata | null }>((from, to) => supabase.from("projects").select("image_metadata").range(from, to));
+    if (rows.some((row) => Object.values(row.image_metadata ?? {}).some((photo) => photo.original === url))) {
       updatePending([], [url]);
       return true;
     }

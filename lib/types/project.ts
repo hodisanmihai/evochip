@@ -21,6 +21,8 @@ export interface CarModel {
 }
 
 // The stored row contains foreign-key IDs, rather than joined objects.
+export type ImageMetadata = Record<string, { original: string; description: string }>;
+
 export interface ProjectRow {
   id: number;
   car_models: number | null;
@@ -36,6 +38,7 @@ export interface ProjectRow {
   note: string;
   image_url: string;
   image_urls?: string[] | null;
+  image_metadata?: ImageMetadata;
   dyno_file_url: string;
   video_url: string;
   mods: string[] | string | null;
@@ -107,7 +110,7 @@ export function normalizeAdminProject(project: AdminProjectResponse): AdminProje
 export const PROJECT_SELECT = `
   id, combustion, engine_capacity, engine_code, transmition,
   initial_power, initial_torque, new_power, new_torque,
-  note, image_url, image_urls, dyno_file_url, video_url, mods,
+  note, image_url, image_urls, image_metadata, dyno_file_url, video_url, mods,
   stage (id, solution_name),
   car_models (id, car_model, car_brand, car_brands (id, car_brand))
 `;

@@ -18,6 +18,7 @@ const initialProjectState: ProjectFields = {
   stage: null,
   image_url: "",
   image_urls: [],
+  image_metadata: {},
   dyno_file_url: "",
   video_url: "",
 };
@@ -42,6 +43,7 @@ export const getProjectState = (item?: ProjectItem | null): ProjectFields => {
     stage: item.stage ?? null,
     image_url: item.image_url || "",
     image_urls: projectImages(item.image_url, item.image_urls),
+    image_metadata: item.image_metadata ?? {},
     dyno_file_url: item.dyno_file_url || "",
     video_url: item.video_url || "",
   };
