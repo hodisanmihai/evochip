@@ -52,8 +52,8 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: evoChipLogo.src,
-    apple: evoChipLogo.src,
+    icon: { url: "/evochip-icon.png", type: "image/png", sizes: "192x192" },
+    apple: { url: "/evochip-apple-icon.png", type: "image/png", sizes: "180x180" },
   },
 
   robots: {
