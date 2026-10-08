@@ -106,12 +106,12 @@ const Prices = ({ prices, contact, error, onRetry }: PricesProps) => {
       className="w-full min-h-screen py-12 flex items-center justify-start p-4 sm:p-8 md:p-20 bg-primary z-2"
     >
       <div className="w-full h-full flex flex-col items-center justify-start gap-8 md:gap-12">
-        <h1
+        <h2
           ref={titleRef}
-          className="md:px-22 self-start text-[1.2rem] md:text-[1.5rem] leading-tight text-white whitespace-nowrap overflow-hidden"
+          className="section-heading md:px-22 self-start text-[1.2rem] md:text-[1.5rem] leading-tight text-white whitespace-nowrap overflow-hidden"
         >
           Lista <span className="text-black"> Preturi</span>
-        </h1>
+        </h2>
 
         <div
           ref={scrollContainerRef}

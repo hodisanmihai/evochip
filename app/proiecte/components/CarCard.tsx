@@ -19,8 +19,8 @@ const CarCard = ({ project }: { project: Project }) => {
   const modelName = carModel.car_model || "Unknown";
 
   const stageLabel = project.stage?.solution_name ?? "Stage nespecificat";
-  const oldPower = project.initial_power || 0;
-  const newPower = project.new_power || 0;
+  const oldPower = project.initial_power ?? "—";
+  const newPower = project.new_power ?? "—";
 
   const imageSrc =
     !imgError && project.image_url ? project.image_url : PlaceHolder;
@@ -36,7 +36,7 @@ const CarCard = ({ project }: { project: Project }) => {
         >
           <NextImage
             src={imageSrc}
-            alt={`${brandName} ${modelName}`}
+            alt={project.image_metadata?.[project.image_url]?.description || `${brandName} ${modelName} — ${stageLabel}`}
             width={310}
             height={190}
             className="w-full h-full object-contain bg-zinc-900"
@@ -46,10 +46,10 @@ const CarCard = ({ project }: { project: Project }) => {
 
         <div className="flex flex-col text-white font-black tracking-wide bg-primary">
           <div className="flex items-center justify-between text-lg md:text-2xl uppercase p-3 pb-2">
-            <h3 className="text-zinc-300 font-extrabold tracking-tighter">
+            <h2 className="project-card-heading text-zinc-300 font-extrabold tracking-tighter">
               {brandName}
               <span className="font-normal text-sm pl-1">{modelName}</span>
-            </h3>
+            </h2>
 
             <div className="flex items-center gap-1 font-bold text-base md:text-xl">
               <span className="text-zinc-300">{oldPower}</span>

@@ -121,12 +121,12 @@ const LatestProjects = ({ projects, error, onRetry }: LatestProjectsProp) => {
       id="latest-projects"
     >
       <div className=" w-full h-full flex flex-col items-center justify-start gap-8 md:gap-12">
-        <h1 className="md:px-35 self-start animate-title text-[1.2rem] md:text-[1.5rem] leading-tight text-white whitespace-nowrap">
+        <h2 className="section-heading md:px-35 self-start animate-title text-[1.2rem] md:text-[1.5rem] leading-tight text-white whitespace-nowrap">
           {data.latestProjects.titluNormal}
           <span className="text-red-500">
             {data.latestProjects.titluColorat}
           </span>
-        </h1>
+        </h2>
 
         <div
           ref={containerRef}

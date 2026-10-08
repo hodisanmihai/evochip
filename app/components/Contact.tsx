@@ -68,9 +68,9 @@ const Contact = ({ contact }: ContactProps) => {
   return (
     <section className="w-full bg-[#0a0a0a] min-h-screen flex flex-col items-center justify-center  p-8 md:p-8 gap-8 relative z-2">
       <div className="w-full max-w-3xl px-2 self-start md:px-30 md:mb-20 mt-4">
-        <h1 className="text-2xl md:text-3xl font-bold leading-tight text-white mb-2 ">
+        <h2 className="section-heading text-2xl md:text-3xl font-bold leading-tight text-white mb-2 ">
           Ia legătura <span className="text-red-500">acum</span>
-        </h1>
+        </h2>
       </div>
 
       <div className="w-full max-w-3xl px-2 grid grid-cols-1 sm:grid-cols-2 gap-6">

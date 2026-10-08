@@ -5,10 +5,11 @@ import continut from "../data/continut.json";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const ShowCase = () => {
+const ShowCase = ({ active = true }: { active?: boolean }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!active) return;
     const ctx = gsap.context(() => {
       gsap.registerPlugin(ScrollTrigger);
       const tl1 = gsap.timeline({
@@ -78,7 +79,7 @@ const ShowCase = () => {
         );
     }, containerRef);
     return () => ctx.revert();
-  }, []);
+  }, [active]);
 
   return (
     <div
@@ -100,15 +101,15 @@ const FirstShowCase = () => {
       id="showcase1"
     >
       <div className="h-full w-full md:w-1/2 flex flex-col items-center justify-center gap-10 md:px-10 text-left text-shadow-2xl sm:gap-6 md:items-start md:text-left">
-        <h1 className=" animate-title text-[1.2rem] leading-tight text-white">
+        <h2 className="section-heading  animate-title text-[1.2rem] leading-tight text-white">
           {continut.showcase1.titluNormal}
           <span className="text-primary text-shadow-2xl">
             {continut.showcase1.titluColorat}
           </span>
-        </h1>
-        <h2 className="animate-subtitle  text-[1rem] leading-tight text-white">
-          {continut.showcase1.subtitlu}
         </h2>
+        <p className="section-description animate-subtitle  text-[1rem] leading-tight text-white">
+          {continut.showcase1.subtitlu}
+        </p>
       </div>
     </div>
   );
@@ -121,15 +122,15 @@ const SecondShowCase = () => {
       id="showcase2"
     >
       <div className="h-full w-full md:w-1/2 flex flex-col items-center  justify-center gap-4 md:px-10 text-left text-shadow-2xl sm:gap-6 md:items-start md:text-left">
-        <h1 className="animate-title text-[1.2rem] leading-tight text-white">
+        <h2 className="section-heading animate-title text-[1.2rem] leading-tight text-white">
           {continut.showcase2.titluNormal}
           <span className="text-primary text-shadow-2xl">
             {continut.showcase2.titluColorat}
           </span>
-        </h1>
-        <h2 className="animate-subtitle  text-[1rem] leading-tight text-white">
-          {continut.showcase2.subtitlu}
         </h2>
+        <p className="section-description animate-subtitle  text-[1rem] leading-tight text-white">
+          {continut.showcase2.subtitlu}
+        </p>
       </div>
     </div>
   );
@@ -141,15 +142,15 @@ const ThirdShowCase = () => {
       id="showcase3"
     >
       <div className="h-full w-full md:w-1/2 flex flex-col items-center justify-center gap-4 md:px-10 text-left text-shadow-2xl sm:gap-6 md:items-start md:text-left">
-        <h1 className="animate-title text-[1.2rem] leading-tight text-white">
+        <h2 className="section-heading animate-title text-[1.2rem] leading-tight text-white">
           {continut.showcase3.titluNormal}
           <span className="text-primary text-shadow-2xl">
             {continut.showcase3.titluColorat}
           </span>
-        </h1>
-        <h2 className="animate-subtitle  text-[1rem] leading-tight text-white">
-          {continut.showcase3.subtitlu}
         </h2>
+        <p className="section-description animate-subtitle  text-[1rem] leading-tight text-white">
+          {continut.showcase3.subtitlu}
+        </p>
       </div>
     </div>
   );

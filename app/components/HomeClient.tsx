@@ -53,24 +53,25 @@ export default function HomeClient({
 
   return (
     <div className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center ">
+      <noscript><style>{".intro-wrapper { display: none !important; }"}</style></noscript>
       {showIntro && (
         <Intro onRevealHero={revealHero} onComplete={finishIntro} />
       )}
 
-      {showHero && <HeroPage />}
-      {showHero && <ShowCase />}
-      {showHero && <ServicesShowCase />}
+      <HeroPage active={showHero} />
+      <ShowCase active={showHero} />
+      <ServicesShowCase active={showHero} />
 
-      {showHero && <LatestProjects projects={projects} error={projectsError} onRetry={refresh} />}
-      {showHero && <NavBar contact={availableContact} />}
-      {showHero && <Prices prices={prices} contact={availableContact} error={pricesError} onRetry={refresh} />}
-      {showHero && (contact ? <Contact contact={contact} /> : (
+      <LatestProjects projects={projects} error={projectsError} onRetry={refresh} />
+      <NavBar contact={availableContact} />
+      <Prices prices={prices} contact={availableContact} error={pricesError} onRetry={refresh} />
+      {contact ? <Contact contact={contact} /> : (
         <section id="contact" className="relative z-10 p-8 text-center text-zinc-300">
           <p>Datele de contact nu sunt disponibile momentan.</p>
           <button type="button" onClick={refresh} className="mt-3 underline">Reîncearcă</button>
         </section>
-      ))}
-      {showHero && contact && <Footer contact={contact} />}
+      )}
+      {contact && <Footer contact={contact} />}
 
       <Background isVisible={showHero} />
     </div>

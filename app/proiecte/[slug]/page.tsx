@@ -1,79 +1,42 @@
-"use client";
-
+import type { Metadata } from "next";
+import { notFound, permanentRedirect } from "next/navigation";
 import { normalizeMods, safeWebUrl } from "@/lib/data/validation";
-
-import { useEffect, useState, useCallback } from "react";
 import { ArrowLeft, ArrowRight, Play, FileText } from "lucide-react";
 import Link from "next/link";
 import ProjectGallery from "../components/ProjectGallery";
+import ProjectRefresh from "../components/ProjectRefresh";
 import { projectImages } from "@/lib/projects/gallery";
-import { useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { normalizeProject, PROJECT_SELECT } from "@/lib/types/project";
-import type { Project, ProjectResponse } from "@/lib/types/project";
+import { getPublicProject } from "@/lib/projects/public";
+import { projectSlug } from "@/lib/projects/slug";
+import { projectName, projectDescription, projectUrl, projectStructuredData, serializeJsonLd } from "@/lib/projects/seo";
 
-import { useProjectRefresh } from "@/lib/projects/useProjectRefresh";
+type Props = { params: Promise<{ slug: string }> };
+export const dynamic = "force-dynamic";
 
-const Page = () => {
-  const params = useParams();
-  const slug = params.slug as string;
-  const projectId = slug.split("-").slice(-2)[0];
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const project = await getPublicProject((await params).slug);
+  if (!project) notFound();
+  const title = `${projectName(project)} | Chiptuning Oradea | EvoChip`;
+  const description = projectDescription(project);
+  const url = projectUrl(project);
+  const images = project.image_url ? [{ url: project.image_url, alt: projectName(project) }] : [{ url: "/resources/LOGO-EVOCHIP.png", alt: "EvoChip" }];
+  return {
+    title: { absolute: title }, description, alternates: { canonical: url },
+    openGraph: { title, description, url, type: "website", siteName: "EvoChip", locale: "ro_RO", images },
+    twitter: { card: "summary_large_image", title, description, images: images.map((image) => image.url) },
+  };
+}
 
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [revision, setRevision] = useState(0);
-  const refresh = useCallback(() => setRevision((value) => value + 1), []);
-  useProjectRefresh(refresh);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchProject = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        if (!projectId || !/^\d+$/.test(projectId)) {
-          setProject(null);
-          return;
-        }
-        const { data, error } = await createClient()
-          .from("projects")
-          .select(PROJECT_SELECT)
-          .eq("id", projectId)
-          .abortSignal(controller.signal)
-          .returns<ProjectResponse[]>()
-          .maybeSingle();
-        if (controller.signal.aborted) return;
-        if (error) throw error;
-        setProject(data ? normalizeProject(data) : null);
-      } catch {
-        if (!controller.signal.aborted) setError("Nu am putut încărca proiectul. Încearcă din nou.");
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    };
-    void fetchProject();
-    return () => controller.abort();
-  }, [projectId, revision]);
-
-  if (loading) return <div className="text-zinc-400 p-8">Se încarcă...</div>;
-  if (error) return (
-    <div role="alert" className="p-8 text-zinc-300">
-      <p>{error}</p>
-      <button type="button" onClick={refresh} className="mt-4 rounded bg-primary px-4 py-2 text-white">Reîncearcă</button>
-    </div>
-  );
-  if (!project) return (
-    <div className="p-8 text-zinc-400">
-      <p>Proiectul nu a fost găsit.</p>
-      <Link href="/proiecte" className="mt-4 inline-block text-white underline">Vezi proiectele disponibile</Link>
-    </div>
-  );
+export default async function Page({ params }: Props) {
+  const { slug } = await params;
+  const project = await getPublicProject(slug);
+  if (!project) notFound();
+  if (slug !== projectSlug(project)) permanentRedirect(`/proiecte/${projectSlug(project)}`);
 
   const carModel = project.car_models;
   const brandData = carModel?.car_brands;
-  const brandName = brandData?.car_brand || "Unknown";
-  const modelName = carModel?.car_model || "Unknown";
+  const brandName = brandData?.car_brand || "";
+  const modelName = carModel?.car_model || "";
   const stageLabel = project.stage?.solution_name ?? "Stage nespecificat";
   const combustion = project.combustion;
   const engineCode = project.engine_code;
@@ -91,7 +54,9 @@ const Page = () => {
   const modArray = normalizeMods(modList);
   return (
     <div className="min-h-full px-4 md:px-8 py-4">
-      <Link href="/proiecte">
+      <ProjectRefresh />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(projectStructuredData(project)) }} />
+      <Link href="/proiecte" aria-label="Înapoi la proiecte">
         <ArrowLeft />
       </Link>
       <div className="w-full flex flex-col lg:flex-row gap-6 py-4">
@@ -110,29 +75,29 @@ const Page = () => {
             </div>
 
             <span className="flex items-center gap-3 text-xl md:text-3xl  font-black">
-              <span className="text-secondary">{initialPower}</span>
+              <span className="text-secondary">{initialPower ?? "—"}</span>
               <ArrowRight className="text-green-500" size={24} />
-              <span className="text-green-500">{newPower}</span>
+              <span className="text-green-500">{newPower ?? "—"}</span>
             </span>
           </div>
           <div className="w-full flex flex-col font-semibold gap-2 pt-4 text-sm md:text-base">
             <span className="w-full flex justify-between">
-              <span>motorizare</span> <span>{combustion}</span>
+              <span>motorizare</span> <span>{combustion || "—"}</span>
             </span>
             <span className="w-full flex justify-between">
-              <span>Capacitate CC</span> <span>{engineCapacity}</span>
+              <span>Capacitate CC</span> <span>{engineCapacity ?? "—"}</span>
             </span>
 
             <span className="w-full flex justify-between">
-              <span>cod motor</span> <span>{engineCode}</span>
+              <span>cod motor</span> <span>{engineCode || "—"}</span>
             </span>
             <span className="w-full flex flex-row justify-between">
               Putere
               <span className="w-1/2">
                 <span className="flex flex-row justify-between">
-                  <span className="text-secondary">{initialPower}hp</span>
+                  <span className="text-secondary">{initialPower != null ? `${initialPower} CP` : "—"}</span>
                   <ArrowRight className="text-green-500" />
-                  <span className=" text-green-500 ">{newPower}hp</span>
+                  <span className=" text-green-500 ">{newPower != null ? `${newPower} CP` : "—"}</span>
                 </span>
               </span>
             </span>
@@ -140,25 +105,26 @@ const Page = () => {
               Cuplu
               <span className="w-1/2">
                 <span className="flex flex-row justify-between">
-                  <span className="text-secondary">{initialTorque}nm</span>
+                  <span className="text-secondary">{initialTorque != null ? `${initialTorque} Nm` : "—"}</span>
                   <ArrowRight className="text-green-500" />
-                  <span className=" text-green-500 ">{newTorque}nm</span>
+                  <span className=" text-green-500 ">{newTorque != null ? `${newTorque} Nm` : "—"}</span>
                 </span>
               </span>
             </span>
             <span className="w-full flex flex-row justify-between">
-              <span>Transmisie</span> <span>{transmision}</span>
+              <span>Transmisie</span> <span>{transmision || "—"}</span>
             </span>
           </div>
         </div>
 
         <div className="w-full lg:w-1/2 flex flex-col gap-5">
-          <span className="flex flex-wrap gap-2 items-center">
-            <h2 className="text-2xl md:text-3xl font-black">{brandName}</h2>
-            <h2 className="text-2xl md:text-3xl font-black">{modelName}</h2>
-          </span>
+          <h1 className="project-heading flex flex-wrap gap-2 items-center text-2xl md:text-3xl font-black">
+            <span>{brandName}</span><span>{modelName}</span>
+            {project.stage && <span className="sr-only">{stageLabel}</span>}
+          </h1>
+          <p className="text-sm text-zinc-300">{projectDescription(project)}</p>
           <div className="text-xl uppercase text-secondary">
-            Modificari
+            <h2 className="text-xl">Modificări</h2>
             <ul className="flex flex-wrap gap-2 text-xs py-4">
               {modArray.map((mod, index) => (
                 <li
@@ -171,7 +137,7 @@ const Page = () => {
             </ul>
           </div>
           <div className="bg-zinc-100/5 rounded-md p-4 border border-zinc-200/10">
-            <p className="text-xl uppercase text-secondary">Observatii</p>
+            <h2 className="text-xl uppercase text-secondary">Observații</h2>
             <p className="mt-2 text-sm md:text-base">{note}</p>
           </div>
           <div className="flex gap-3 mt-auto ">
@@ -203,5 +169,3 @@ const Page = () => {
     </div>
   );
 };
-
-export default Page;

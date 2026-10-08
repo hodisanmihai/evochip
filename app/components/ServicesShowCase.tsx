@@ -27,13 +27,14 @@ type ShowcaseData = {
 
 const CARD_HEIGHT = 380;
 
-const ServicesShowCase = () => {
+const ServicesShowCase = ({ active = true }: { active?: boolean }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement[]>([]);
 
   const showcase = data.showcase4 as ShowcaseData;
 
   useEffect(() => {
+    if (!active) return;
     if (!sectionRef.current) return;
 
     const ctx = gsap.context(() => {
@@ -67,7 +68,7 @@ const ServicesShowCase = () => {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, [showcase.cards.length]);
+  }, [active, showcase.cards.length]);
 
   return (
     <div
@@ -75,10 +76,10 @@ const ServicesShowCase = () => {
       ref={sectionRef}
       className="w-full h-screen flex flex-col items-start justify-start py-20 p-4 md:p-8 md:px-0 gap-8 overflow-hidden bg-black/50 md:bg-black/0 z-2"
     >
-      <h1 className="animate-title text-[1.2rem] leading-tight px-6 md:mx-35 text-white whitespace-nowrap">
+      <h2 className="section-heading animate-title text-[1.2rem] leading-tight px-6 md:mx-35 text-white whitespace-nowrap">
         {showcase.titluNormal}
         <span className="text-red-500">{showcase.titluColorat}</span>
-      </h1>
+      </h2>
 
       <div
         className="relative w-full max-w-2xl mt-30 px-2 md:mx-35"

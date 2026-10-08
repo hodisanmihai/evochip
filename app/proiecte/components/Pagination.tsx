@@ -1,6 +1,10 @@
 "use client";
 
+import Link from "next/link";
+import { listingPath } from "@/lib/projects/seo";
+
 interface PaginationProps {
+  local?: boolean;
   totalPages: number;
 
   page: number;
@@ -8,15 +12,17 @@ interface PaginationProps {
   setPage: (page: number) => void;
 }
 
-const Pagination = ({ totalPages, page, setPage }: PaginationProps) => {
+const Pagination = ({ totalPages, page, setPage, local = false }: PaginationProps) => {
   return (
     <div>
       {totalPages > 1 && (
-        <div className="flex gap-2 justify-center mt-6">
+        <nav aria-label="Paginare proiecte" className="flex gap-2 justify-center mt-6">
           {Array.from({ length: totalPages }).map((_, i) => (
-            <button
+            <Link
               key={i}
-              onClick={() => setPage(i + 1)}
+              href={listingPath(i + 1)}
+              aria-current={page === i + 1 ? "page" : undefined}
+              onClick={(event) => { if (local) { event.preventDefault(); setPage(i + 1); } }}
               className={`px-3 py-1 rounded transition ${
                 page === i + 1
                   ? "bg-primary text-black font-semibold"
@@ -24,9 +30,9 @@ const Pagination = ({ totalPages, page, setPage }: PaginationProps) => {
               }`}
             >
               {i + 1}
-            </button>
+            </Link>
           ))}
-        </div>
+        </nav>
       )}
     </div>
   );

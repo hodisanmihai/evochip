@@ -34,7 +34,8 @@ body {
   color: var(--foreground);
 }
 
-h1 {
+h1,
+.section-heading {
   font-size: 3.5rem;
   font-weight: 1000;
   @media (max-width: 768px) {
@@ -42,7 +43,9 @@ h1 {
   }
 }
 
-h2 {
+h2,
+.section-description,
+.project-heading {
   font-size: 2rem;
   font-weight: 400;
   @media (max-width: 768px) {
@@ -68,4 +71,18 @@ h2 {
   .clip-mobile {
     clip-path: none;
   }
+}
+
+/* Preserve visual typography when semantic heading levels change. */
+.project-card-heading {
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+.project-list-heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+@media (min-width: 768px) {
+  .project-card-heading { font-size: 1.5rem; }
+  .project-list-heading { font-size: 1.5rem; }
 }
